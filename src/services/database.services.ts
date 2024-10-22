@@ -1,6 +1,7 @@
 import { Collection, Db, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
 import User from '~/models/schemas/user.schema'
+import RefreshToken from '~/models/schemas/refreshtoken.schema'
 dotenv.config()
 
 // Replace the uri string with your connection string.
@@ -30,6 +31,9 @@ class DatabaseService {
 
   get users():Collection<User>{
     return this.database.collection('users');
+  }
+  get refreshTokens(): Collection<RefreshToken> {
+    return this.database.collection("refresh_tokens")
   }
 }
 
