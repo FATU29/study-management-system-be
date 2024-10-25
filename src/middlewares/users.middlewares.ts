@@ -1,9 +1,12 @@
-import { checkSchema, ParamSchema } from 'express-validator';
-import { USERS_MESSAGES } from '~/constants/message';
-import databaseService from '~/services/database.services';
-import usersService from '~/services/users.services';
-import { compareBcrypt, hashBcrypt } from '~/utils/crypto';
-import validate from '~/utils/validate';
+import { checkSchema, ParamSchema } from 'express-validator'
+import { ObjectId } from 'mongodb'
+import { USERS_MESSAGES } from '~/constants/message'
+import { ErrorWithStatus } from '~/models/Errors'
+import databaseService from '~/services/database.services'
+import usersService from '~/services/users.services'
+import { compareBcrypt } from '~/utils/crypto'
+import { verifyToken } from '~/utils/jwt'
+import validate from '~/utils/validate'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -65,7 +68,6 @@ const confirmPasswordSchema: ParamSchema = {
   }
 }
 
-
 export const loginValidation = validate(
   checkSchema(
     {
@@ -80,12 +82,18 @@ export const loginValidation = validate(
             if (user === null) {
               throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
             }
-            
+
             const isMatch = await compareBcrypt(req.body.password, user.password)
             if (!isMatch) {
               throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
             }
             
+            const user_id = user._id as ObjectId;
+            const refresh = await databaseService.refreshTokens.findOne({user_id:user_id})
+            if(refresh !== null){
+              await databaseService.refreshTokens.deleteOne({user_id:user_id});
+            }
+
             req.user = user
             return true
           }
@@ -121,8 +129,6 @@ export const loginValidation = validate(
   )
 )
 
-
-
 export const registerValidation = validate(
   checkSchema(
     {
@@ -134,7 +140,6 @@ export const registerValidation = validate(
         custom: {
           options: async (value) => {
             const isExistEmail = await usersService.checkEmailExist(value)
-            console.log(isExistEmail);
             if (isExistEmail) {
               throw new Error(USERS_MESSAGES.EMAIL_ALREADY_EXISTS)
             }
@@ -143,9 +148,80 @@ export const registerValidation = validate(
         }
       },
       password: passwordSchema,
-      confirmPassword: confirmPasswordSchema,
+      confirmPassword: confirmPasswordSchema
     },
     ['body']
   )
 )
-  
+
+export const acccessTokenValidation = validate(
+  checkSchema(
+    {
+      Authorization: {
+        custom: {
+          options: async (value, { req }) => {
+            if (value === '') {
+              throw new Error(USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED)
+            }
+            const access = value.split(' ')
+            if (access[0] !== 'Bearer') {
+              throw new Error(USERS_MESSAGES.LOGOUT_INVALID)
+            } else if (access[0] === 'Bearer') {
+              const accessToken = access[1]
+              try {
+                const decoded = await verifyToken({
+                  token: accessToken,
+                  secretOrPublicKey: process.env.SECRECT_KEY_ACCESSTOKEN as string
+                })
+
+                req.decoded_authorization = decoded
+                return true
+              } catch (error: any) {
+                throw new Error(error.message)
+              }
+            }
+          }
+        }
+      }
+    },
+    ['headers']
+  )
+)
+
+export const refreshTokenValidation = validate(
+  checkSchema({
+    refreshToken: {
+      custom: {
+        options: async (value, { req }) => {
+          if (value === '') {
+            throw new Error(USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED)
+          }
+          try {
+            const [decoded, refresh] = await Promise.all([
+              await verifyToken({
+                token: value,
+                secretOrPublicKey: process.env.SECRECT_KEY_REFRESHTOKEN as string
+              }),
+              await databaseService.refreshTokens.findOne({ token: value })
+            ])
+
+            if(refresh === null){
+              throw new Error(USERS_MESSAGES.REFRESH_TOKEN_IS_INVALID);
+            }
+
+            req.decoded_refresh_token = decoded
+            return true
+          } catch (error: any) {
+            if(error instanceof  ErrorWithStatus){
+              throw new Error(USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST)
+            } else {
+              throw error;
+            }
+
+
+          }
+        }
+      }
+    }
+  })
+)

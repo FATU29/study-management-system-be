@@ -90,6 +90,11 @@ class UsersService {
        const result = await databaseService.users.findOne({email});
        return Boolean(result);
     }
+
+    async logout(refreshToken:string){
+      await databaseService.refreshTokens.deleteOne({token:refreshToken});
+    
+    }
   }
 
 const usersService = new UsersService()
