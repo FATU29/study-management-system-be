@@ -6,8 +6,9 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
-      decoded_Authorization: TokenPayload,
+      decoded_authorization: TokenPayload,
       decoded_refreshToken: TokenPayload,
+      decoded_verify_email_token: TokenPayload,
     }
   }
 }

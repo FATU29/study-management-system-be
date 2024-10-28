@@ -12,7 +12,6 @@ const port = 3000;
 databaseService.connect().catch(console.dir);
 app.use(express.json());
 app.use('/users',usersRouter);
-
 app.use(defaultErrorHandler as any);
 
 
