@@ -28,4 +28,4 @@ export const defaultErrorHandler = (err: any, req: Request, res: Response, next:
       errorInfo: omit(error as any, ['stack'])
     })
   }
-} 
+}

@@ -7,6 +7,8 @@ import usersService from '~/services/users.services'
 import { compareBcrypt } from '~/utils/crypto'
 import { verifyToken } from '~/utils/jwt'
 import validate from '~/utils/validate'
+import * as process from 'node:process'
+import { UserVerifyStatus } from '~/constants/enum'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -83,15 +85,19 @@ export const loginValidation = validate(
               throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
             }
 
+            if (user.verify === UserVerifyStatus.Unverified) {
+              await databaseService.users.deleteOne({ _id: user._id as ObjectId })
+              throw new Error(USERS_MESSAGES.USER_NO_VERIFY)
+            }
+
             const isMatch = await compareBcrypt(req.body.password, user.password)
             if (!isMatch) {
               throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
             }
-            
-            const user_id = user._id as ObjectId;
-            const refresh = await databaseService.refreshTokens.findOne({user_id:user_id})
-            if(refresh !== null){
-              await databaseService.refreshTokens.deleteOne({user_id:user_id});
+
+            const refresh = await databaseService.refreshTokens.findOne({ user_id: user._id as ObjectId })
+            if (refresh !== null) {
+              await databaseService.refreshTokens.deleteOne({ user_id: user._id as ObjectId })
             }
 
             req.user = user
@@ -139,8 +145,12 @@ export const registerValidation = validate(
         trim: true,
         custom: {
           options: async (value) => {
-            const isExistEmail = await usersService.checkEmailExist(value)
-            if (isExistEmail) {
+            const user = await usersService.checkEmailExist(value)
+            if (Boolean(user)) {
+              if (user?.verify === UserVerifyStatus.Unverified) {
+                await databaseService.users.deleteOne({ _id: user._id })
+              }
+
               throw new Error(USERS_MESSAGES.EMAIL_ALREADY_EXISTS)
             }
             return true
@@ -154,7 +164,7 @@ export const registerValidation = validate(
   )
 )
 
-export const acccessTokenValidation = validate(
+export const accessTokenValidation = validate(
   checkSchema(
     {
       Authorization: {
@@ -169,12 +179,10 @@ export const acccessTokenValidation = validate(
             } else if (access[0] === 'Bearer') {
               const accessToken = access[1]
               try {
-                const decoded = await verifyToken({
+                req.decoded_authorization = await verifyToken({
                   token: accessToken,
                   secretOrPublicKey: process.env.SECRECT_KEY_ACCESSTOKEN as string
                 })
-
-                req.decoded_authorization = decoded
                 return true
               } catch (error: any) {
                 throw new Error(error.message)
@@ -205,23 +213,89 @@ export const refreshTokenValidation = validate(
               await databaseService.refreshTokens.findOne({ token: value })
             ])
 
-            if(refresh === null){
-              throw new Error(USERS_MESSAGES.REFRESH_TOKEN_IS_INVALID);
+            if (refresh === null) {
+              throw new Error(USERS_MESSAGES.REFRESH_TOKEN_IS_INVALID)
             }
 
             req.decoded_refresh_token = decoded
             return true
           } catch (error: any) {
-            if(error instanceof  ErrorWithStatus){
+            if (error instanceof ErrorWithStatus) {
               throw new Error(USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST)
             } else {
-              throw error;
+              throw error
             }
-
-
           }
         }
       }
     }
   })
+)
+
+export const verifyEmailValidation = validate(
+  checkSchema(
+    {
+      token: {
+        custom: {
+          options: async (value, { req }) => {
+            const token = value.trim()
+
+            if (token === '') {
+              throw new Error(USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED)
+            }
+
+            try {
+              req.decoded_verify_email_token = await verifyToken({
+                token: token,
+                secretOrPublicKey: process.env.SECRECT_KEY_VERIFYEMAIL as string
+              })
+
+              return true
+            } catch (error) {
+              if (error instanceof ErrorWithStatus) {
+                throw new Error(USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST)
+              } else {
+                throw error
+              }
+            }
+          }
+        }
+      }
+    },
+    ['query']
+  )
+)
+
+export const sendAgainVerifyEmailValidation = validate(
+  checkSchema(
+    {
+      email: {
+        trim: true,
+        notEmpty: true,
+        isEmail: true,
+        custom: {
+          options: async (value, { req }) => {
+            const email = value.trim()
+
+            if (value === '') {
+              throw new Error('No Empty User ID')
+            }
+
+            const user = await databaseService.users.findOne({ email: email })
+            if (!user) {
+              throw new Error(USERS_MESSAGES.USER_NOT_FOUND)
+            }
+
+            if (user.verify === UserVerifyStatus.Verified) {
+              throw new Error(USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE)
+            }
+
+            req.user = user
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
 )

@@ -2,6 +2,7 @@
 import { JwtPayload } from 'jsonwebtoken'
 import { TokenType, UserVerifyStatus } from '~/constants/enum'
 import User from '~/models/schemas/user.schema'
+import { ObjectId } from 'mongodb'
 
 export interface RegisterReqBody {
   email: string
@@ -13,13 +14,8 @@ export interface LoginReqBody {
   password: string
 }
 
-
-
-
-
-
 export interface TokenPayload extends JwtPayload {
-    user_id: string
+    user_id: ObjectId
     token_type: TokenType
     verify?: UserVerifyStatus
     exp: number

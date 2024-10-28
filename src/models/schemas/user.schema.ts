@@ -28,7 +28,7 @@ export default class User {
    role?: string
    emailVerifyToken?: string
    forgotPasswordVerifyToken?: string
-   verify?: UserVerifyStatus
+   verify: number
    avatar?: string
    coverPhoto?: string
    created_at?: Date
@@ -40,11 +40,11 @@ export default class User {
     this.password = user.password
     this.firstName = user.firstName
     this.lastName = user.lastName
+    this.verify = user.verify as number
     this.dateOfBirth = user.dateOfBirth
     this.role = user.role
     this.emailVerifyToken = user.emailVerifyToken
     this.forgotPasswordVerifyToken = user.forgotPasswordVerifyToken
-    this.verify = user.verify
     this.avatar = user.avatar
     this.coverPhoto = user.coverPhoto
     this.created_at = user.created_at || new Date()

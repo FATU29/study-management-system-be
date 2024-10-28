@@ -1,20 +1,20 @@
 import User from '~/models/schemas/user.schema'
 import databaseService from './database.services'
-import { hashBcrypt } from '~/utils/crypto'
 import { ObjectId } from 'mongodb'
 import { RegisterReqBody } from '~/controllers/request/user.request'
 import { signToken, verifyToken } from '~/utils/jwt'
-import { TokenType } from '~/constants/enum'
+import { TokenType, UserVerifyStatus } from '~/constants/enum'
 import RefreshToken from '~/models/schemas/refreshtoken.schema'
+import * as process from 'node:process'
+import { sendMail } from '~/utils/email'
 
 class UsersService {
-
-  private signAccessToken({ user_id }: { user_id: string }) {
-    return signToken({
+  async signAccessToken({ user_id, verify }: { user_id: string; verify?: number }) {
+    return await signToken({
       payload: {
         user_id,
         token_type: TokenType.AccessToken,
-        
+        verify
       },
       privateKey: process.env.SECRECT_KEY_ACCESSTOKEN as string,
       options: {
@@ -22,21 +22,23 @@ class UsersService {
       }
     })
   }
-  private signRefreshToken({ user_id, exp }: { user_id: string; exp?: number }) {
+  async signRefreshToken({ user_id, exp, verify }: { user_id: string; exp?: number; verify?: number }) {
     if (exp) {
-      return signToken({
+      return await signToken({
         payload: {
           user_id,
           token_type: TokenType.RefreshToken,
-          exp
+          exp,
+          verify
         },
         privateKey: process.env.SECRECT_KEY_REFRESHTOKEN as string
       })
     }
-    return signToken({
+    return await signToken({
       payload: {
         user_id,
         token_type: TokenType.RefreshToken,
+        verify
       },
       privateKey: process.env.SECRECT_KEY_REFRESHTOKEN as string,
       options: {
@@ -45,35 +47,58 @@ class UsersService {
     })
   }
 
-
-
   async register(payload: RegisterReqBody) {
-    const user_id = new ObjectId()
+    const user_id = new ObjectId();
+    const verifyEmailToken = await this.signVerifyEmailToken({user_id:String(user_id)});
+
+    const domainNameForVerify = process.env.DOMAIN_NAME +'/users/verify-email?token='+verifyEmailToken;
+
+    const msg = {
+      to: payload.email,
+      from: process.env.COMPANY_MAIL as string,
+      subject:`Verify Registeration Acoount`,
+      text: `Please click here to verify: ${verifyEmailToken}`,
+      html: `<b>Please click here to verify:</b> 
+      <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+    }
+
+    await sendMail(msg);
     await databaseService.users.insertOne(
       new User({
         ...payload,
         _id: user_id,
+        verify: UserVerifyStatus.Unverified
       })
     )
   }
 
-
-  private signAccessAndRefreshToken({ user_id }: { user_id: string }) {
-    return Promise.all([this.signAccessToken({ user_id }), this.signRefreshToken({ user_id })])
+  async signAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify?: number }) {
+    return await Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
   }
 
-  private decodeRefreshToken(refresh_token: string) {
-    return verifyToken({
-      token: refresh_token,
-      secretOrPublicKey: process.env.SECRECT_KEY_REFRESHTOKEN  as string
+  async signVerifyEmailToken ({user_id}:{user_id:string}){
+    return await signToken({
+      payload:{
+        user_id:user_id,
+      },
+      privateKey:process.env.SECRECT_KEY_VERIFYEMAIL as string,
+      options:{
+        expiresIn:process.env.EMAILVERIFY_EXPIRE as string
+      }
     })
   }
 
 
-  async login({ user_id }: { user_id: string}) {
-    
+  async decodeRefreshToken(refresh_token: string) {
+    return await verifyToken({
+      token: refresh_token,
+      secretOrPublicKey: process.env.SECRECT_KEY_REFRESHTOKEN as string
+    })
+  }
+
+  async login({ user_id }: { user_id: string }) {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-      user_id,
+      user_id
     })
     const { iat, exp } = await this.decodeRefreshToken(refresh_token)
 
@@ -86,16 +111,47 @@ class UsersService {
     }
   }
 
-    async checkEmailExist(email:string){
-       const result = await databaseService.users.findOne({email});
-       return Boolean(result);
+  async checkEmailExist(email: string) {
+    return await databaseService.users.findOne({ email })
+  }
+
+  async logout(refreshToken: string) {
+    return await databaseService.refreshTokens.deleteOne({ token: refreshToken })
+  }
+
+  async verifyEmailService(user_id: ObjectId) {
+    await databaseService.users.updateOne(
+      { _id: user_id },
+      {
+        $set: { verify: UserVerifyStatus.Verified },
+        $currentDate: { updated_at: true }
+      }
+    );
+  }
+
+  async sendAgainVerifyEmailService(user:User){
+    const newTokenVerifyEmail = await usersService.signVerifyEmailToken({
+      user_id: String(String(user._id))
+    })
+
+    console.log('Token verify email: ', newTokenVerifyEmail)
+    console.log('Start sending email')
+
+    const domainNameForVerify = process.env.DOMAIN_NAME +'/users/verify-email?token='+newTokenVerifyEmail;
+
+    const msg = {
+      to: user.email,
+      from: process.env.COMPANY_MAIL as string,
+      subject:`Verify Registeration Acoount`,
+      text: `Please click here to verify: ${newTokenVerifyEmail}`,
+      html: `<b>Please click here to verify:</b> 
+      <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
     }
 
-    async logout(refreshToken:string){
-      await databaseService.refreshTokens.deleteOne({token:refreshToken});
-    
-    }
+    await sendMail(msg);
   }
+
+}
 
 const usersService = new UsersService()
 export default usersService
