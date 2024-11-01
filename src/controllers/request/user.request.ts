@@ -25,5 +25,11 @@ export interface TokenPayload extends JwtPayload {
 
 export interface LogoutReqBody {
   refreshToken:string,
+}
 
+export interface UpdateProfileRequest{
+  firstname?:string,
+  lastname?:string,
+  dateOfBirth?:Date,
+  avatar?:string,
 }

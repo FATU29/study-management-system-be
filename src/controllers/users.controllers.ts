@@ -1,6 +1,12 @@
 import { Request, Response } from 'express'
 import usersService from '~/services/users.services'
-import { LoginReqBody, LogoutReqBody, RegisterReqBody } from './request/user.request'
+import {
+  LoginReqBody,
+  LogoutReqBody,
+  RegisterReqBody,
+  TokenPayload,
+  UpdateProfileRequest
+} from './request/user.request'
 import { USERS_MESSAGES } from '~/constants/message'
 import { ObjectId } from 'mongodb'
 import { ParamsDictionary } from 'express-serve-static-core'
@@ -11,6 +17,7 @@ import databaseService from '~/services/database.services'
 import { UserVerifyStatus } from '~/constants/enum'
 import process from 'node:process'
 import { sendMail } from '~/utils/email'
+import UsersServices from '~/services/users.services'
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   const { email, password } = req.body
@@ -44,12 +51,9 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
 
 export const verifyEmailController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
   const { decoded_verify_email_token } = req
-  console.log(decoded_verify_email_token)
   const user_id = new ObjectId(decoded_verify_email_token.user_id)
 
   const user = await databaseService.users.findOne({ _id: user_id })
-
-  console.log(user)
 
   if (user === null) {
     return res.json({
@@ -72,9 +76,56 @@ export const verifyEmailController = async (req: Request<ParamsDictionary, any, 
 
 export const sendAgainVerifyEmailController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
   const { user } = req
-  await usersService.sendAgainVerifyEmailService(user);
+  await usersService.sendAgainVerifyEmailService(user)
 
   res.json({
     message: 'Resend Verify-Email-Token Successfully'
   })
+}
+
+export const forgotPasswordController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+  const { user } = req
+
+  const forgotPasswordToken = await usersService.forgotPasswordService(user)
+
+  res.json({
+    message: 'Send Verify-Forgot-Password Successfully'
+  })
+}
+
+export const resetPasswordController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+  return res.json({
+    message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS
+  }) as any
+}
+
+export const getMeController = async (req: Request<ParamsDictionary, any, any>, res: Response) => {
+  const decoded: TokenPayload = req.decoded_authorization
+  const id = new ObjectId(decoded?.user_id)
+  if (id) {
+    const user = await usersServices.getDetailUser(id)
+    res.json({
+      data: user
+    })
+  } else {
+    res.json({
+      message: USERS_MESSAGES.USER_NOT_FOUND
+    })
+  }
+}
+
+export const updateProfileController = async (req: Request<ParamsDictionary, any, UpdateProfileRequest>, res: Response) => {
+  const decoded = req.decoded_authorization
+  const id = new ObjectId(decoded.user_id)
+  const data = req.body;
+  const document = await UsersServices.updateProfileService(id, data);
+  if(!document) {
+    res.json({
+      message: "Update failed"
+    })
+  } else {
+    res.json({
+      message:"Update successfully"
+    })
+  }
 }

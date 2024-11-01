@@ -9,6 +9,7 @@ import { verifyToken } from '~/utils/jwt'
 import validate from '~/utils/validate'
 import * as process from 'node:process'
 import { UserVerifyStatus } from '~/constants/enum'
+import * as string_decoder from 'node:string_decoder'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -87,7 +88,7 @@ export const loginValidation = validate(
 
             if (user.verify === UserVerifyStatus.Unverified) {
               await databaseService.users.deleteOne({ _id: user._id as ObjectId })
-              throw new Error(USERS_MESSAGES.USER_NO_VERIFY)
+              throw new Error(USERS_MESSAGES.USER_NOT_VERIFY)
             }
 
             const isMatch = await compareBcrypt(req.body.password, user.password)
@@ -281,17 +282,25 @@ export const sendAgainVerifyEmailValidation = validate(
               throw new Error('No Empty User ID')
             }
 
-            const user = await databaseService.users.findOne({ email: email })
-            if (!user) {
-              throw new Error(USERS_MESSAGES.USER_NOT_FOUND)
-            }
+            try{
+              const user = await databaseService.users.findOne({ email: email })
+              if (!user) {
+                throw new Error(USERS_MESSAGES.USER_NOT_FOUND)
+              }
 
-            if (user.verify === UserVerifyStatus.Verified) {
-              throw new Error(USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE)
-            }
+              if (user.verify === UserVerifyStatus.Verified) {
+                throw new Error(USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE)
+              }
 
-            req.user = user
-            return true
+              req.user = user
+              return true
+            } catch(error){
+              if (error instanceof ErrorWithStatus) {
+                throw new Error(USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE)
+              } else {
+                throw error
+              }
+            }
           }
         }
       }
@@ -299,3 +308,96 @@ export const sendAgainVerifyEmailValidation = validate(
     ['body']
   )
 )
+
+
+
+export const forgotPasswordValidation = validate(checkSchema({
+  email:{
+    notEmpty: {
+      errorMessage:USERS_MESSAGES.EMAIL_IS_REQUIRED
+    },
+    isEmail: {
+      errorMessage:USERS_MESSAGES.EMAIL_IS_INVALID
+    },
+    trim:true,
+    custom:{
+      options: async (value,{req}) => {
+          if(value ===''){
+            throw new Error(USERS_MESSAGES.EMAIL_IS_REQUIRED);
+          }
+
+          try{
+            const user = await databaseService.users.findOne({email:value});
+            if(!user){
+              throw new Error(USERS_MESSAGES.USER_NOT_FOUND);
+            }
+
+            if(user.verify === UserVerifyStatus.Unverified){
+              await databaseService.users.deleteOne({ _id: user._id });
+              throw new Error(USERS_MESSAGES.USER_NOT_VERIFY);
+            }
+
+            req.user = user;
+            return true;
+          } catch(error){
+            throw error;
+          }
+
+
+      }
+    }
+  }
+},['body']))
+
+export const resetPasswordValidation = validate(checkSchema({
+  token:{
+    custom:{
+      options: async (value,{req}) => {
+        if(value === ''){
+          throw new Error(USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED);
+        }
+
+        try {
+          const verify = await verifyToken({
+            token:value,
+            secretOrPublicKey:process.env.SECRECT_KEY_FORGOTPASSWORD as string,
+          })
+
+          return true;
+
+        } catch(error){
+          throw error
+        }
+
+      }
+    }
+  }
+},['query']))
+
+export const updateProfileValidation = validate(checkSchema({
+  firstName: {
+    isString: true,
+    trim: true,
+    optional: { options: { nullable: true } },
+
+  },
+  lastName: {
+    isString: true,
+    trim: true,
+    optional: { options: { nullable: true } },
+  },
+  dateOfBirth: {
+    isDate: true,
+    optional: { options: { nullable: true } },
+  },
+  avatar: {
+    isString: { errorMessage: 'Avatar must be a string.' },
+    optional: { options: { nullable: true } }, // Allow null or undefined
+    matches: {
+      options: /^data:image\/[a-zA-Z]+;base64,[A-Za-z0-9+/]+={0,2}$/,
+      errorMessage: 'Avatar must be a valid Base64 image string.',
+    },
+  }
+}, ['body']));
+
+

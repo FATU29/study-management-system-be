@@ -1,7 +1,7 @@
 import User from '~/models/schemas/user.schema'
 import databaseService from './database.services'
 import { ObjectId } from 'mongodb'
-import { RegisterReqBody } from '~/controllers/request/user.request'
+import { RegisterReqBody, UpdateProfileRequest } from '~/controllers/request/user.request'
 import { signToken, verifyToken } from '~/utils/jwt'
 import { TokenType, UserVerifyStatus } from '~/constants/enum'
 import RefreshToken from '~/models/schemas/refreshtoken.schema'
@@ -53,16 +53,16 @@ class UsersService {
 
     const domainNameForVerify = process.env.DOMAIN_NAME +'/users/verify-email?token='+verifyEmailToken;
 
-    const msg = {
-      to: payload.email,
-      from: process.env.COMPANY_MAIL as string,
-      subject:`Verify Registeration Acoount`,
-      text: `Please click here to verify: ${verifyEmailToken}`,
-      html: `<b>Please click here to verify:</b> 
-      <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
-    }
-
-    await sendMail(msg);
+    // const msg = {
+    //   to: payload.email,
+    //   from: process.env.COMPANY_MAIL as string,
+    //   subject:`Verify Registeration Acoount`,
+    //   text: `Please click here to verify: ${verifyEmailToken}`,
+    //   html: `<b>Please click here to verify:</b>
+    //   <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+    // }
+    //
+    // await sendMail(msg);
     await databaseService.users.insertOne(
       new User({
         ...payload,
@@ -87,6 +87,20 @@ class UsersService {
       }
     })
   }
+
+  async signVerifyForgotPasswordToken({user_id}:{user_id:string}){
+    return await signToken({
+      payload:{
+        user_id
+      },
+      privateKey:process.env.SECRECT_KEY_FORGOTPASSWORD as string,
+      options:{
+        expiresIn: process.env.FORGOTPASSWORD_EXPIRE
+      }
+    })
+  }
+
+
 
 
   async decodeRefreshToken(refresh_token: string) {
@@ -134,23 +148,55 @@ class UsersService {
       user_id: String(String(user._id))
     })
 
-    console.log('Token verify email: ', newTokenVerifyEmail)
-    console.log('Start sending email')
-
     const domainNameForVerify = process.env.DOMAIN_NAME +'/users/verify-email?token='+newTokenVerifyEmail;
 
-    const msg = {
-      to: user.email,
-      from: process.env.COMPANY_MAIL as string,
-      subject:`Verify Registeration Acoount`,
-      text: `Please click here to verify: ${newTokenVerifyEmail}`,
-      html: `<b>Please click here to verify:</b> 
-      <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
-    }
-
-    await sendMail(msg);
+    // const msg = {
+    //   to: user.email,
+    //   from: process.env.COMPANY_MAIL as string,
+    //   subject:`Verify Registeration Acoount`,
+    //   text: `Please click here to verify: ${newTokenVerifyEmail}`,
+    //   html: `<b>Please click here to verify:</b>
+    //   <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+    // }
+    //
+    // await sendMail(msg);
   }
 
+  async forgotPasswordService(user:User){
+    const id = user._id;
+    const forgotPasswordToken = await this.signVerifyForgotPasswordToken({user_id:String(id)});
+
+
+
+    // const domainNameForVerify = process.env.DOMAIN_NAME +'/users/reset-password?token='+forgotPasswordToken;
+    //
+    // const msg = {
+    //   to: user.email,
+    //   from: process.env.COMPANY_MAIL as string,
+    //   subject:`Verify Registeration Acoount`,
+    //   text: `Please click here to verify: ${forgotPasswordToken}`,
+    //   html: `<b>Please click here to verify:</b>
+    //   <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+    // }
+    //
+    // await sendMail(msg);
+  }
+
+  async getDetailUser(id:ObjectId){
+    return await databaseService.users.findOne({ _id:id },{
+      projection:{
+        password:0
+      }
+    });
+  }
+
+  async updateProfileService(_id:ObjectId,data:UpdateProfileRequest){
+     return await  databaseService.users.findOneAndUpdate({_id:_id},{
+       $set:data
+     }, {
+       returnDocument:"after"
+     })
+  }
 }
 
 const usersService = new UsersService()
