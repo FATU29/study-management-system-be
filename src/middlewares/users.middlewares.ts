@@ -12,6 +12,7 @@ import { UserVerifyStatus } from '~/constants/enum'
 import * as string_decoder from 'node:string_decoder'
 
 const passwordSchema: ParamSchema = {
+  trim:true,
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
   },
@@ -38,6 +39,7 @@ const passwordSchema: ParamSchema = {
 }
 
 const confirmPasswordSchema: ParamSchema = {
+  trim:true,
   notEmpty: {
     errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
   },
@@ -70,6 +72,12 @@ const confirmPasswordSchema: ParamSchema = {
     }
   }
 }
+
+
+export const passwordValidation = validate(checkSchema({
+  password:passwordSchema,
+  confirmPassword:confirmPasswordSchema
+}))
 
 export const loginValidation = validate(
   checkSchema(
@@ -363,7 +371,11 @@ export const resetPasswordValidation = validate(checkSchema({
             secretOrPublicKey:process.env.SECRECT_KEY_FORGOTPASSWORD as string,
           })
 
-          return true;
+            req.decoded_verify_forgot_password_token = verify;
+
+            return true;
+
+
 
         } catch(error){
           throw error
@@ -399,5 +411,73 @@ export const updateProfileValidation = validate(checkSchema({
     },
   }
 }, ['body']));
+
+
+export const changeNewPasswordEmailValidation = validate(checkSchema({
+  email:{
+    notEmpty:true,
+    isEmail: true,
+    trim: true,
+    custom:{
+      options: async (value, {req}) => {
+        try {
+          const user = await databaseService.users.findOne({email:value});
+          if(!user){
+            throw new Error(USERS_MESSAGES.USER_NOT_FOUND);
+          }
+
+          if(user.verify === UserVerifyStatus.Unverified){
+            throw new Error(USERS_MESSAGES.USER_NOT_VERIFY);
+          }
+
+          req.user =user;
+          return true;
+        }  catch (e:any) {
+          throw e;
+        }
+
+      }
+    }
+  },
+},['body']))
+
+
+export const changeNewPasswordValidation = validate(
+  checkSchema({
+    oldPassword: {
+      ...passwordSchema,
+      custom: {
+        options: async (value, { req }) => {
+          try {
+            const user = req.user;
+            if (!user) {
+              throw new Error("User is not set in req");
+            }
+            const isMatch = await compareBcrypt(value, user.password);
+            if (!isMatch) {
+              throw new Error("Wrong Password");
+            }
+            return true;
+          } catch (e) {
+            throw e;
+          }
+        },
+      },
+    },
+    newPassword:passwordSchema,
+    confirmNewPassword:{
+      ...confirmPasswordSchema,
+      custom:{
+        options:async (value, {req}) => {
+          if (value !== req.body.newPassword) {
+            throw new Error(USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD)
+          }
+          return true
+        }
+      }
+    }
+  },['body'])
+);
+
 
 

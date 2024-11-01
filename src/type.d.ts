@@ -9,6 +9,7 @@ declare global {
       decoded_authorization: TokenPayload,
       decoded_refreshToken: TokenPayload,
       decoded_verify_email_token: TokenPayload,
+      decoded_verify_forgot_password_token: TokenPayload,
     }
   }
 }

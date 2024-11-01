@@ -33,3 +33,16 @@ export interface UpdateProfileRequest{
   dateOfBirth?:Date,
   avatar?:string,
 }
+
+
+export interface  PasswordRequest{
+  password:string,
+  user_id:string,
+}
+
+export interface  ChangePasswordRequest {
+  email:string,
+  oldPassword:string,
+  newPassword:string,
+  confirmNewPassword:string,
+}
