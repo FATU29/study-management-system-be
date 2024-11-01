@@ -9,8 +9,6 @@ export interface UserType {
   lastName?: string
   dateOfBirth?: Date
   role?: string
-  emailVerifyToken?: string
-  forgotPasswordVerifyToken?: string
   verify?: UserVerifyStatus
   avatar?: string
   coverPhoto?: string
@@ -26,8 +24,6 @@ export default class User {
    lastName?: string
    dateOfBirth?: Date
    role?: string
-   emailVerifyToken?: string
-   forgotPasswordVerifyToken?: string
    verify: number
    avatar?: string
    coverPhoto?: string
@@ -43,13 +39,9 @@ export default class User {
     this.verify = user.verify as number
     this.dateOfBirth = user.dateOfBirth
     this.role = user.role
-    this.emailVerifyToken = user.emailVerifyToken
-    this.forgotPasswordVerifyToken = user.forgotPasswordVerifyToken
     this.avatar = user.avatar
     this.coverPhoto = user.coverPhoto
     this.created_at = user.created_at || new Date()
     this.updated_at = user.updated_at || new Date()
   }
-
-
 }

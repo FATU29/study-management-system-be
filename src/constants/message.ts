@@ -54,7 +54,7 @@ export const USERS_MESSAGES = {
     GET_PROFILE_SUCCESS: 'Get profile success',
     FOLLOW_SUCCESS: 'Follow success',
     INVALID_USER_ID: 'Invalid user id',
-    USER_NO_VERIFY: 'User does not Verified-Email. Please Register Account again',
+    USER_NOT_VERIFY: 'User does not Verified-Email. Please Register Account again',
   } as const
   
   

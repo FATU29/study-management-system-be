@@ -1,10 +1,14 @@
 import express from 'express'
 import {
+  forgotPasswordController,
   loginController,
   logoutController,
   registerController,
+  resetPasswordController,
   sendAgainVerifyEmailController,
-  verifyEmailController
+  verifyEmailController,
+  getMeController,
+  updateProfileController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidation,
@@ -12,7 +16,10 @@ import {
   refreshTokenValidation,
   registerValidation,
   sendAgainVerifyEmailValidation,
-  verifyEmailValidation
+  verifyEmailValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation,
+  updateProfileValidation
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handler'
 
@@ -27,5 +34,9 @@ usersRouter.post(
   sendAgainVerifyEmailValidation,
   wrapRequestHandler(sendAgainVerifyEmailController)
 )
+usersRouter.get('/reset-password',resetPasswordValidation,wrapRequestHandler(resetPasswordController))
+usersRouter.post('/forgot-password',forgotPasswordValidation,wrapRequestHandler(forgotPasswordController));
+usersRouter.get('/get-me',accessTokenValidation,wrapRequestHandler(getMeController));
+usersRouter.patch('/update-profile',accessTokenValidation,updateProfileValidation,updateProfileController)
 
 export default usersRouter
