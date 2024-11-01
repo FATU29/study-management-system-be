@@ -8,7 +8,9 @@ import {
   sendAgainVerifyEmailController,
   verifyEmailController,
   getMeController,
-  updateProfileController
+  updateProfileController,
+  passwordController,
+  changePasswordController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidation,
@@ -19,7 +21,10 @@ import {
   verifyEmailValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
-  updateProfileValidation
+  updateProfileValidation,
+  passwordValidation,
+  changeNewPasswordEmailValidation,
+  changeNewPasswordValidation
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handler'
 
@@ -37,6 +42,8 @@ usersRouter.post(
 usersRouter.get('/reset-password',resetPasswordValidation,wrapRequestHandler(resetPasswordController))
 usersRouter.post('/forgot-password',forgotPasswordValidation,wrapRequestHandler(forgotPasswordController));
 usersRouter.get('/get-me',accessTokenValidation,wrapRequestHandler(getMeController));
-usersRouter.patch('/update-profile',accessTokenValidation,updateProfileValidation,updateProfileController)
+usersRouter.patch('/update-profile',accessTokenValidation,updateProfileValidation,wrapRequestHandler(updateProfileController))
+usersRouter.post('/password',passwordValidation,wrapRequestHandler(passwordController));
+usersRouter.post('/change-password',changeNewPasswordEmailValidation,changeNewPasswordValidation,wrapRequestHandler(changePasswordController));
 
 export default usersRouter

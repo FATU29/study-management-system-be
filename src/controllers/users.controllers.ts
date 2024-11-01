@@ -3,9 +3,11 @@ import usersService from '~/services/users.services'
 import {
   LoginReqBody,
   LogoutReqBody,
+  PasswordRequest,
   RegisterReqBody,
   TokenPayload,
-  UpdateProfileRequest
+  UpdateProfileRequest,
+  ChangePasswordRequest
 } from './request/user.request'
 import { USERS_MESSAGES } from '~/constants/message'
 import { ObjectId } from 'mongodb'
@@ -95,6 +97,7 @@ export const forgotPasswordController = async (req: Request<ParamsDictionary, an
 
 export const resetPasswordController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
   return res.json({
+    user_id: req.decoded_verify_forgot_password_token.user_id,
     message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS
   }) as any
 }
@@ -114,18 +117,44 @@ export const getMeController = async (req: Request<ParamsDictionary, any, any>, 
   }
 }
 
-export const updateProfileController = async (req: Request<ParamsDictionary, any, UpdateProfileRequest>, res: Response) => {
+export const updateProfileController = async (
+  req: Request<ParamsDictionary, any, UpdateProfileRequest>,
+  res: Response
+) => {
   const decoded = req.decoded_authorization
   const id = new ObjectId(decoded.user_id)
-  const data = req.body;
-  const document = await UsersServices.updateProfileService(id, data);
-  if(!document) {
+  const data = req.body
+  const document = await UsersServices.updateProfileService(id, data)
+  if (!document) {
     res.json({
-      message: "Update failed"
+      message: 'Update failed'
     })
   } else {
     res.json({
-      message:"Update successfully"
+      message: 'Update successfully'
     })
   }
+}
+
+export const passwordController = async (req: Request<ParamsDictionary, any, PasswordRequest>, res: Response) => {
+  const { password, user_id } = req.body
+  const result = await usersService.passwordService(new ObjectId(user_id), password)
+
+  return res.json({
+    message: 'Change password successfully'
+  }) as any
+}
+
+export const changePasswordController = async (
+  req: Request<ParamsDictionary, any, ChangePasswordRequest>,
+  res: Response
+) => {
+  const { newPassword } = req.body
+  const { _id } = req.user
+
+  const result = await usersService.passwordService(_id, newPassword)
+
+  return res.json({
+    message: 'Change password successfully'
+  }) as any
 }
