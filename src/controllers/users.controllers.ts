@@ -20,25 +20,26 @@ import { UserVerifyStatus } from '~/constants/enum'
 import process from 'node:process'
 import { sendMail } from '~/utils/email'
 import UsersServices from '~/services/users.services'
+import HTTP_STATUS from '~/constants/httpstatus'
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   const { email, password } = req.body
   const hashedPassword = await hashBcrypt(password)
   const result = await usersService.register({ email: email, password: hashedPassword })
-  return res.json({
+   res.json({
     message: USERS_MESSAGES.REGISTER_SUCCESS,
-    result
-  }) as any
+    status: HTTP_STATUS.OK
+  })
 }
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
   const result = await usersService.login({ user_id: user_id.toString() })
-  return res.json({
+   res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
-    result
-  }) as any
+    status: HTTP_STATUS.OK
+  })
 }
 
 export const logoutController = async (req: Request<ParamsDictionary, any, LogoutReqBody>, res: Response) => {
@@ -46,9 +47,10 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
 
   await usersService.logout(refreshToken)
 
-  return res.json({
-    message: USERS_MESSAGES.LOGOUT_SUCCESS
-  }) as any
+   res.json({
+    message: USERS_MESSAGES.LOGOUT_SUCCESS,
+    status: HTTP_STATUS.OK
+  })
 }
 
 export const verifyEmailController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
@@ -58,22 +60,25 @@ export const verifyEmailController = async (req: Request<ParamsDictionary, any, 
   const user = await databaseService.users.findOne({ _id: user_id })
 
   if (user === null) {
-    return res.json({
-      message: USERS_MESSAGES.USER_NOT_FOUND
+    res.status(HTTP_STATUS.UNPROCESSABLE_ENTITY).json({
+      message: USERS_MESSAGES.USER_NOT_FOUND,
+      status: HTTP_STATUS.UNPROCESSABLE_ENTITY
     })
   }
 
   if (user?.verify === UserVerifyStatus.Verified) {
-    return res.json({
-      message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
+    res.status(HTTP_STATUS.UNPROCESSABLE_ENTITY).json({
+      message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE,
+      status: HTTP_STATUS.UNPROCESSABLE_ENTITY
     })
   }
 
   await usersService.verifyEmailService(user_id)
 
-  return res.json({
-    message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS
-  }) as any
+   res.json({
+    message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
+    status: HTTP_STATUS.OK
+  })
 }
 
 export const sendAgainVerifyEmailController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
@@ -81,7 +86,8 @@ export const sendAgainVerifyEmailController = async (req: Request<ParamsDictiona
   await usersService.sendAgainVerifyEmailService(user)
 
   res.json({
-    message: 'Resend Verify-Email-Token Successfully'
+    message: 'Resend Verify-Email-Token Successfully',
+    status: HTTP_STATUS.OK
   })
 }
 
@@ -91,13 +97,15 @@ export const forgotPasswordController = async (req: Request<ParamsDictionary, an
   const forgotPasswordToken = await usersService.forgotPasswordService(user)
 
   res.json({
-    message: 'Send Verify-Forgot-Password Successfully'
+    message: 'Send Verify-Forgot-Password Successfully',
+    status: HTTP_STATUS.OK
   })
 }
 
 export const resetPasswordController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
   return res.json({
     user_id: req.decoded_verify_forgot_password_token.user_id,
+    status: HTTP_STATUS.OK,
     message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS
   }) as any
 }
@@ -112,7 +120,8 @@ export const getMeController = async (req: Request<ParamsDictionary, any, any>, 
     })
   } else {
     res.json({
-      message: USERS_MESSAGES.USER_NOT_FOUND
+      message: USERS_MESSAGES.USER_NOT_FOUND,
+      status: HTTP_STATUS.OK
     })
   }
 }
@@ -125,24 +134,20 @@ export const updateProfileController = async (
   const id = new ObjectId(decoded.user_id)
   const data = req.body
   const document = await UsersServices.updateProfileService(id, data)
-  if (!document) {
-    res.json({
-      message: 'Update failed'
-    })
-  } else {
-    res.json({
-      message: 'Update successfully'
-    })
-  }
+  res.json({
+    message: 'Update successfully',
+    status: HTTP_STATUS.OK
+  })
 }
 
 export const passwordController = async (req: Request<ParamsDictionary, any, PasswordRequest>, res: Response) => {
   const { password, user_id } = req.body
   const result = await usersService.passwordService(new ObjectId(user_id), password)
 
-  return res.json({
-    message: 'Change password successfully'
-  }) as any
+  res.json({
+    message: 'Change password successfully',
+    status:HTTP_STATUS.OK
+  })
 }
 
 export const changePasswordController = async (
@@ -154,7 +159,8 @@ export const changePasswordController = async (
 
   const result = await usersService.passwordService(_id, newPassword)
 
-  return res.json({
-    message: 'Change password successfully'
-  }) as any
+   res.json({
+    message: 'Change password successfully',
+    status:HTTP_STATUS.OK
+  })
 }
