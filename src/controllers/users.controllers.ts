@@ -38,7 +38,8 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   const result = await usersService.login({ user_id: user_id.toString() })
    res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
-    status: HTTP_STATUS.OK
+    status: HTTP_STATUS.OK,
+     data:result
   })
 }
 
@@ -103,11 +104,11 @@ export const forgotPasswordController = async (req: Request<ParamsDictionary, an
 }
 
 export const resetPasswordController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
-  return res.json({
+  res.json({
     user_id: req.decoded_verify_forgot_password_token.user_id,
     status: HTTP_STATUS.OK,
     message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS
-  }) as any
+  })
 }
 
 export const getMeController = async (req: Request<ParamsDictionary, any, any>, res: Response) => {
