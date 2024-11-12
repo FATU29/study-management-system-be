@@ -11,11 +11,12 @@ import { passwordController } from '~/controllers/users.controllers'
 import { hashBcrypt } from '~/utils/crypto'
 
 class UsersService {
-  async signAccessToken({ user_id, verify }: { user_id: string; verify?: number }) {
+  async signAccessToken({ user_id, role, verify }: { user_id: string, role?:string, verify?: number }) {
     try {
       return await signToken({
         payload: {
           user_id,
+          role,
           token_type: TokenType.AccessToken,
           verify
         },
@@ -87,9 +88,9 @@ class UsersService {
     }
   }
 
-  async signAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify?: number }) {
+  async signAccessAndRefreshToken({ user_id,role, verify }: { user_id: string,role?:string, verify?: number }) {
     try {
-      return await Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
+      return await Promise.all([this.signAccessToken({ user_id,role, verify }), this.signRefreshToken({ user_id, verify })])
     } catch (error) {
       throw error
     }
@@ -138,10 +139,11 @@ class UsersService {
     }
   }
 
-  async login({ user_id }: { user_id: string }) {
+  async login({ user_id,role }: { user_id: string,role?:string }) {
     try {
       const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-        user_id
+        user_id,
+        role
       })
       const { iat, exp } = await this.decodeRefreshToken(refresh_token)
 

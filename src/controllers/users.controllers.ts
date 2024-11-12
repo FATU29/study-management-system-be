@@ -35,7 +35,8 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
-  const result = await usersService.login({ user_id: user_id.toString() })
+  const role = user.role
+  const result = await usersService.login({ user_id: user_id.toString(),role })
    res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     status: HTTP_STATUS.OK,

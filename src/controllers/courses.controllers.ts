@@ -100,5 +100,4 @@ export const deleteCourseController = async (
     status:HTTP_STATUS.OK,
     data:result
   })
-
 }

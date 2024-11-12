@@ -11,6 +11,16 @@ export const addCourseValidation = validate(checkSchema({
    title: {
      custom: {
        options: async (value,{req}) => {
+
+         // const role  = req.decoded_authorization.role;
+         // if(role !== "TEACHER"){
+         //   throw new ErrorWithStatus({
+         //     message:"Just teacher has permission",
+         //     status:HTTP_STATUS.UNPROCESSABLE_ENTITY
+         //   })
+         // }
+
+
          const title = value.trim();
 
           if(value === ""){
@@ -29,6 +39,7 @@ export const addCourseValidation = validate(checkSchema({
                 status:HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
+
 
             req.slugOfCourse = slug;
             return true;

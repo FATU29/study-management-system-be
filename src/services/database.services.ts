@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import User from '~/models/schemas/user.schema'
 import RefreshToken from '~/models/schemas/refreshtoken.schema'
 import { Course } from '~/models/schemas/course.schema'
+import { RoleType } from '~/models/schemas/roleType.schema'
 dotenv.config()
 
 // Replace the uri string with your connection string.
@@ -39,6 +40,10 @@ class DatabaseService {
 
   get courses():Collection<Course> {
     return this.database.collection("courses");
+  }
+
+  get role():Collection<RoleType>{
+    return this.database.collection("roles");
   }
 }
 
