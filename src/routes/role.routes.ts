@@ -15,6 +15,4 @@ roleRouter.patch('/update',accessTokenValidation,updateRoleMiddlewares,wrapReque
 
 
 
-
-
 export default roleRouter;

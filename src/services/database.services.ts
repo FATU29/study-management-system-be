@@ -10,6 +10,10 @@ dotenv.config()
 const uri = process.env.DATABASE_URI
 const dbName = process.env.DATABASE_NAME
 
+
+
+
+
 class DatabaseService {
   private client: MongoClient
   private database: Db
@@ -34,6 +38,7 @@ class DatabaseService {
   get users():Collection<User>{
     return this.database.collection('users');
   }
+
   get refreshTokens(): Collection<RefreshToken> {
     return this.database.collection("refresh_tokens")
   }

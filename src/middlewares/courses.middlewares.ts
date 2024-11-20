@@ -12,13 +12,13 @@ export const addCourseValidation = validate(checkSchema({
      custom: {
        options: async (value,{req}) => {
 
-         // const role  = req.decoded_authorization.role;
-         // if(role !== "TEACHER"){
-         //   throw new ErrorWithStatus({
-         //     message:"Just teacher has permission",
-         //     status:HTTP_STATUS.UNPROCESSABLE_ENTITY
-         //   })
-         // }
+         const role  = req.decoded_authorization.role;
+         if(role !== "TEACHER"){
+           throw new ErrorWithStatus({
+             message:"Just teacher has permission",
+             status:HTTP_STATUS.UNPROCESSABLE_ENTITY
+           })
+         }
 
 
          const title = value.trim();
@@ -63,6 +63,17 @@ export const updateCourseValidation = validate(checkSchema({
   title:{
     custom: {
       options: async (value, {req}) => {
+
+        const role  = req.decoded_authorization.role;
+        if(role !== "TEACHER"){
+          throw new ErrorWithStatus({
+            message:"Just teacher has permission",
+            status:HTTP_STATUS.UNPROCESSABLE_ENTITY
+          })
+        }
+
+
+
         if(value === ''){
           return true;
         }
@@ -100,6 +111,16 @@ export const deleteCourseValidation = validate(checkSchema({
     trim:true,
     custom:{
       options: async (value, {req}) => {
+
+        const role  = req.decoded_authorization.role;
+        if(role !== "TEACHER"){
+          throw new ErrorWithStatus({
+            message:"Just teacher has permission",
+            status:HTTP_STATUS.UNPROCESSABLE_ENTITY
+          })
+        }
+
+
         try {
           const course = await databaseService.courses.findOne({_id:new ObjectId(value)});
           if(!course){
@@ -113,6 +134,19 @@ export const deleteCourseValidation = validate(checkSchema({
         } catch (error:any){
           throw error
         }
+      }
+    }
+  }
+},['params']))
+
+
+export const getCourseValidation = validate(checkSchema({
+  slug:{
+    notEmpty:true,
+    trim:true,
+    custom:{
+      options: async (value, {req}) => {
+
       }
     }
   }

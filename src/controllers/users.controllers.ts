@@ -158,8 +158,9 @@ export const changePasswordController = async (
 ) => {
   const { newPassword } = req.body
   const { _id } = req.user
+  const id = new ObjectId(_id)
 
-  const result = await usersService.passwordService(_id, newPassword)
+  const result = await usersService.passwordService(id, newPassword)
 
    res.json({
     message: 'Change password successfully',
