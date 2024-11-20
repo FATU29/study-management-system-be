@@ -11,11 +11,12 @@ import { passwordController } from '~/controllers/users.controllers'
 import { hashBcrypt } from '~/utils/crypto'
 
 class UsersService {
-  async signAccessToken({ user_id, verify }: { user_id: string; verify?: number }) {
+  async signAccessToken({ user_id, role, verify }: { user_id: string, role?:string, verify?: number }) {
     try {
       return await signToken({
         payload: {
           user_id,
+          role,
           token_type: TokenType.AccessToken,
           verify
         },
@@ -24,11 +25,11 @@ class UsersService {
           expiresIn: process.env.ACCESSTOKEN_EXPIRE
         }
       })
-    } catch(error) {
-
+    } catch (error) {
       throw error
     }
   }
+
   async signRefreshToken({ user_id, exp, verify }: { user_id: string; exp?: number; verify?: number }) {
     try {
       if (exp) {
@@ -53,17 +54,17 @@ class UsersService {
           expiresIn: process.env.REFRESHTOKEN_EXPIRE
         }
       })
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
 
   async register(payload: RegisterReqBody) {
     try {
-      const user_id = new ObjectId();
-      const verifyEmailToken = await this.signVerifyEmailToken({user_id:String(user_id)});
+      const user_id = new ObjectId()
+      const verifyEmailToken = await this.signVerifyEmailToken({ user_id: String(user_id) })
 
-      const domainNameForVerify = process.env.DOMAIN_NAME +'/users/verify-email?token='+verifyEmailToken;
+      const domainNameForVerify = process.env.DOMAIN_NAME + '/users/verify-email?token=' + verifyEmailToken
 
       // const msg = {
       //   to: payload.email,
@@ -82,47 +83,47 @@ class UsersService {
           verify: UserVerifyStatus.Unverified
         })
       )
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
 
-  async signAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify?: number }) {
+  async signAccessAndRefreshToken({ user_id,role, verify }: { user_id: string,role?:string, verify?: number }) {
     try {
-      return await Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
-    } catch(error) {
+      return await Promise.all([this.signAccessToken({ user_id,role, verify }), this.signRefreshToken({ user_id, verify })])
+    } catch (error) {
       throw error
     }
   }
 
-  async signVerifyEmailToken ({user_id}:{user_id:string}){
+  async signVerifyEmailToken({ user_id }: { user_id: string }) {
     try {
       return await signToken({
-        payload:{
-          user_id:user_id,
+        payload: {
+          user_id: user_id
         },
-        privateKey:process.env.SECRECT_KEY_VERIFYEMAIL as string,
-        options:{
-          expiresIn:process.env.EMAILVERIFY_EXPIRE as string
+        privateKey: process.env.SECRECT_KEY_VERIFYEMAIL as string,
+        options: {
+          expiresIn: process.env.EMAILVERIFY_EXPIRE as string
         }
       })
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
 
-  async signVerifyForgotPasswordToken({user_id}:{user_id:string}){
+  async signVerifyForgotPasswordToken({ user_id }: { user_id: string }) {
     try {
       return await signToken({
-        payload:{
+        payload: {
           user_id
         },
-        privateKey:process.env.SECRECT_KEY_FORGOTPASSWORD as string,
-        options:{
+        privateKey: process.env.SECRECT_KEY_FORGOTPASSWORD as string,
+        options: {
           expiresIn: process.env.FORGOTPASSWORD_EXPIRE
         }
       })
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
@@ -133,15 +134,16 @@ class UsersService {
         token: refresh_token,
         secretOrPublicKey: process.env.SECRECT_KEY_REFRESHTOKEN as string
       })
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
 
-  async login({ user_id }: { user_id: string }) {
+  async login({ user_id,role }: { user_id: string,role?:string }) {
     try {
       const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-        user_id
+        user_id,
+        role
       })
       const { iat, exp } = await this.decodeRefreshToken(refresh_token)
 
@@ -152,7 +154,7 @@ class UsersService {
         access_token,
         refresh_token
       }
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
@@ -160,7 +162,7 @@ class UsersService {
   async checkEmailExist(email: string) {
     try {
       return await databaseService.users.findOne({ email })
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
@@ -168,7 +170,7 @@ class UsersService {
   async logout(refreshToken: string) {
     try {
       return await databaseService.refreshTokens.deleteOne({ token: refreshToken })
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
@@ -181,19 +183,19 @@ class UsersService {
           $set: { verify: UserVerifyStatus.Verified },
           $currentDate: { updated_at: true }
         }
-      );
-    } catch(error) {
+      )
+    } catch (error) {
       throw error
     }
   }
 
-  async sendAgainVerifyEmailService(user:User){
+  async sendAgainVerifyEmailService(user: User) {
     try {
       const newTokenVerifyEmail = await usersService.signVerifyEmailToken({
         user_id: String(String(user._id))
       })
 
-      const domainNameForVerify = process.env.DOMAIN_NAME +'/users/verify-email?token='+newTokenVerifyEmail;
+      const domainNameForVerify = process.env.DOMAIN_NAME + '/users/verify-email?token=' + newTokenVerifyEmail
 
       // const msg = {
       //   to: user.email,
@@ -205,58 +207,65 @@ class UsersService {
       // }
       //
       // await sendMail(msg);
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
 
-  async forgotPasswordService(user:User){
+  async forgotPasswordService(user: User) {
     try {
-      const id = user._id;
-      const forgotPasswordToken = await this.signVerifyForgotPasswordToken({user_id:String(id)});
+      const id = user._id
+      const forgotPasswordToken = await this.signVerifyForgotPasswordToken({ user_id: String(id) })
 
-      const domainNameForVerify = process.env.DOMAIN_NAME +'/users/reset-password?token='+forgotPasswordToken;
+      const domainNameForVerify = process.env.DOMAIN_NAME + '/users/reset-password?token=' + forgotPasswordToken
 
       const msg = {
         to: user.email,
         from: process.env.COMPANY_MAIL as string,
-        subject:`Verify Forgot Password`,
+        subject: `Verify Forgot Password`,
         text: `Please click here to verify: ${forgotPasswordToken}`,
         html: `<b>Please click here to verify:</b>
-        <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+        <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `
       }
 
-      await sendMail(msg);
-    } catch(error) {
+      await sendMail(msg)
+    } catch (error) {
       throw error
     }
   }
 
-  async getDetailUser(id:ObjectId){
+  async getDetailUser(id: ObjectId) {
     try {
-      return await databaseService.users.findOne({ _id:id },{
-        projection:{
-          password:0
+      return await databaseService.users.findOne(
+        { _id: id },
+        {
+          projection: {
+            password: 0
+          }
         }
-      });
-    } catch(error) {
+      )
+    } catch (error) {
       throw error
     }
   }
 
-  async updateProfileService(_id:ObjectId,data:UpdateProfileRequest){
+  async updateProfileService(_id: ObjectId, data: UpdateProfileRequest) {
     try {
-      return await  databaseService.users.findOneAndUpdate({_id:_id},{
-        $set:data
-      }, {
-        returnDocument:"after"
-      })
-    } catch(error) {
+      return await databaseService.users.findOneAndUpdate(
+        { _id: _id },
+        {
+          $set: data
+        },
+        {
+          returnDocument: 'after'
+        }
+      )
+    } catch (error) {
       throw error
     }
   }
 
-  async passwordService(_id:ObjectId,password:string){
+  async passwordService(_id: ObjectId, password: string) {
     try {
       return await databaseService.users.updateOne(
         { _id: _id },
@@ -265,7 +274,7 @@ class UsersService {
           $currentDate: { updated_at: true }
         }
       )
-    } catch(error) {
+    } catch (error) {
       throw error
     }
   }
