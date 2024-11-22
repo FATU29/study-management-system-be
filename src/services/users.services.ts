@@ -66,21 +66,22 @@ class UsersService {
 
       const domainNameForVerify = process.env.DOMAIN_NAME + '/users/verify-email?token=' + verifyEmailToken
 
-      // const msg = {
-      //   to: payload.email,
-      //   from: process.env.COMPANY_MAIL as string,
-      //   subject:`Verify Registeration Acoount`,
-      //   text: `Please click here to verify: ${verifyEmailToken}`,
-      //   html: `<b>Please click here to verify:</b>
-      //   <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
-      // }
-      //
-      // await sendMail(msg);
+      const msg = {
+        to: payload.email,
+        from: process.env.COMPANY_NAME as string,
+        subject:`Verify Registeration Acoount`,
+        text: `Please click here to verify: ${verifyEmailToken}`,
+        html: `<b>Please click here to verify:</b>
+        <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+      }
+
+      await sendMail(msg);
       await databaseService.users.insertOne(
         new User({
           ...payload,
           _id: user_id,
-          verify: UserVerifyStatus.Unverified
+          verify: UserVerifyStatus.Unverified,
+          role:"USER"
         })
       )
     } catch (error) {
@@ -197,16 +198,16 @@ class UsersService {
 
       const domainNameForVerify = process.env.DOMAIN_NAME + '/users/verify-email?token=' + newTokenVerifyEmail
 
-      // const msg = {
-      //   to: user.email,
-      //   from: process.env.COMPANY_MAIL as string,
-      //   subject:`Verify Registeration Acoount`,
-      //   text: `Please click here to verify: ${newTokenVerifyEmail}`,
-      //   html: `<b>Please click here to verify:</b>
-      //   <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
-      // }
-      //
-      // await sendMail(msg);
+      const msg = {
+        to: user.email,
+        from: process.env.COMPANY_NAME as string,
+        subject:`Verify Registeration Acoount`,
+        text: `Please click here to verify: ${newTokenVerifyEmail}`,
+        html: `<b>Please click here to verify:</b>
+        <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+      }
+
+      await sendMail(msg);
     } catch (error) {
       throw error
     }
