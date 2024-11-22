@@ -11,9 +11,6 @@ const uri = process.env.DATABASE_URI
 const dbName = process.env.DATABASE_NAME
 
 
-
-
-
 class DatabaseService {
   private client: MongoClient
   private database: Db
@@ -32,6 +29,10 @@ class DatabaseService {
       console.error('Connection failed:', error)
       await this.client.close()
     }
+  }
+
+  async disconnect(){
+    await this.client.close();
   }
 
 
