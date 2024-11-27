@@ -1,7 +1,5 @@
-
 import { JwtPayload } from 'jsonwebtoken'
 import { TokenType, UserVerifyStatus } from '~/constants/enum'
-import User from '~/models/schemas/user.schema'
 import { ObjectId } from 'mongodb'
 
 export interface RegisterReqBody {
@@ -15,36 +13,34 @@ export interface LoginReqBody {
 }
 
 export interface TokenPayload extends JwtPayload {
-    user_id: ObjectId
-    token_type: TokenType
-    verify?: UserVerifyStatus
-    exp: number
-    iat: number
-  }
-
+  user_id: ObjectId
+  token_type: TokenType
+  verify?: UserVerifyStatus
+  exp: number
+  iat: number
+}
 
 export interface LogoutReqBody {
-  refreshToken:string,
+  refreshToken: string
 }
 
-export interface UpdateProfileRequest{
-  firstname?:string,
-  lastname?:string,
-  dateOfBirth?:Date,
-  avatar?:string,
+export interface UpdateProfileRequest {
+  firstname?: string
+  lastname?: string
+  dateOfBirth?: Date
+  avatar?: string
 }
 
-
-export interface  PasswordRequest{
-  password:string,
-  user_id:string,
+export interface PasswordRequest {
+  password: string
+  user_id: string
 }
 
-export interface  ChangePasswordRequest {
-  email:string,
-  oldPassword:string,
-  newPassword:string,
-  confirmNewPassword:string,
+export interface ChangePasswordRequest {
+  email: string
+  oldPassword: string
+  newPassword: string
+  confirmNewPassword: string
 }
 
 

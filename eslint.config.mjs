@@ -15,6 +15,7 @@ export default [
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
+      'no-useless-catch': 0,
       'prettier/prettier': [
         'warn',
         {

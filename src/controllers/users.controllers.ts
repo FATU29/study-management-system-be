@@ -17,18 +17,16 @@ import { hashBcrypt } from '~/utils/crypto'
 import usersServices from '~/services/users.services'
 import databaseService from '~/services/database.services'
 import { UserVerifyStatus } from '~/constants/enum'
-import process from 'node:process'
-import { sendMail } from '~/utils/email'
 import UsersServices from '~/services/users.services'
 import HTTP_STATUS from '~/constants/httpstatus'
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   const { email, password } = req.body
   const hashedPassword = await hashBcrypt(password)
-  const result = await usersService.register({ email: email, password: hashedPassword })
-   res.json({
+  await usersService.register({ email: email, password: hashedPassword })
+  res.json({
     message: USERS_MESSAGES.REGISTER_SUCCESS,
-    status: HTTP_STATUS.OK
+    status: HTTP_STATUS.CREATED
   })
 }
 
@@ -36,11 +34,11 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   const user = req.user as User
   const user_id = user._id as ObjectId
   const role = user.role
-  const result = await usersService.login({ user_id: user_id.toString(),role })
-   res.json({
+  const result = await usersService.login({ user_id: user_id.toString(), role })
+  res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     status: HTTP_STATUS.OK,
-     data:result
+    data: result
   })
 }
 
@@ -49,7 +47,7 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
 
   await usersService.logout(refreshToken)
 
-   res.json({
+  res.json({
     message: USERS_MESSAGES.LOGOUT_SUCCESS,
     status: HTTP_STATUS.OK
   })
@@ -77,7 +75,7 @@ export const verifyEmailController = async (req: Request<ParamsDictionary, any, 
 
   await usersService.verifyEmailService(user_id)
 
-   res.json({
+  res.json({
     message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
     status: HTTP_STATUS.OK
   })
@@ -95,9 +93,7 @@ export const sendAgainVerifyEmailController = async (req: Request<ParamsDictiona
 
 export const forgotPasswordController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
   const { user } = req
-
-  const forgotPasswordToken = await usersService.forgotPasswordService(user)
-
+  await usersService.forgotPasswordService(user)
   res.json({
     message: 'Send Verify-Forgot-Password Successfully',
     status: HTTP_STATUS.OK
@@ -106,7 +102,9 @@ export const forgotPasswordController = async (req: Request<ParamsDictionary, an
 
 export const resetPasswordController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
   res.json({
-    user_id: req.decoded_verify_forgot_password_token.user_id,
+    data: {
+      user_id: req.decoded_verify_forgot_password_token.user_id
+    },
     status: HTTP_STATUS.OK,
     message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS
   })
@@ -135,7 +133,7 @@ export const updateProfileController = async (
   const decoded = req.decoded_authorization
   const id = new ObjectId(decoded.user_id)
   const data = req.body
-  const document = await UsersServices.updateProfileService(id, data)
+  await UsersServices.updateProfileService(id, data)
   res.json({
     message: 'Update successfully',
     status: HTTP_STATUS.OK
@@ -144,11 +142,10 @@ export const updateProfileController = async (
 
 export const passwordController = async (req: Request<ParamsDictionary, any, PasswordRequest>, res: Response) => {
   const { password, user_id } = req.body
-  const result = await usersService.passwordService(new ObjectId(user_id), password)
-
+  await usersService.passwordService(new ObjectId(user_id), password)
   res.json({
     message: 'Change password successfully',
-    status:HTTP_STATUS.OK
+    status: HTTP_STATUS.OK
   })
 }
 
@@ -159,11 +156,9 @@ export const changePasswordController = async (
   const { newPassword } = req.body
   const { _id } = req.user
   const id = new ObjectId(_id)
-
-  const result = await usersService.passwordService(id, newPassword)
-
-   res.json({
+  await usersService.passwordService(id, newPassword)
+  res.json({
     message: 'Change password successfully',
-    status:HTTP_STATUS.OK
+    status: HTTP_STATUS.OK
   })
 }
