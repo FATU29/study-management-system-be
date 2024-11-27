@@ -39,11 +39,24 @@ usersRouter.post(
   sendAgainVerifyEmailValidation,
   wrapRequestHandler(sendAgainVerifyEmailController)
 )
-usersRouter.get('/reset-password',resetPasswordValidation,wrapRequestHandler(resetPasswordController))
-usersRouter.post('/forgot-password',forgotPasswordValidation,wrapRequestHandler(forgotPasswordController));
-usersRouter.get('/get-me',accessTokenValidation,wrapRequestHandler(getMeController));
-usersRouter.patch('/update-profile',accessTokenValidation,updateProfileValidation,wrapRequestHandler(updateProfileController))
-usersRouter.post('/password',passwordValidation,wrapRequestHandler(passwordController));
-usersRouter.post('/change-password',changeNewPasswordEmailValidation,changeNewPasswordValidation,wrapRequestHandler(changePasswordController));
+
+
+usersRouter.get('/get-me', accessTokenValidation, wrapRequestHandler(getMeController))
+usersRouter.patch(
+  '/update-profile',
+  accessTokenValidation,
+  updateProfileValidation,
+  wrapRequestHandler(updateProfileController)
+)
+
+usersRouter.post('/forgot-password', forgotPasswordValidation, wrapRequestHandler(forgotPasswordController))
+usersRouter.get('/reset-password', resetPasswordValidation, wrapRequestHandler(resetPasswordController))
+usersRouter.post('/password', passwordValidation, wrapRequestHandler(passwordController))
+usersRouter.post(
+  '/change-password',
+  changeNewPasswordEmailValidation,
+  changeNewPasswordValidation,
+  wrapRequestHandler(changePasswordController)
+)
 
 export default usersRouter

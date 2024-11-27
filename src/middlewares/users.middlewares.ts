@@ -13,7 +13,7 @@ import * as string_decoder from 'node:string_decoder'
 import HTTP_STATUS from '~/constants/httpstatus'
 
 const passwordSchema: ParamSchema = {
-  trim:true,
+  trim: true,
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
   },
@@ -40,7 +40,7 @@ const passwordSchema: ParamSchema = {
 }
 
 const confirmPasswordSchema: ParamSchema = {
-  trim:true,
+  trim: true,
   notEmpty: {
     errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
   },
@@ -68,7 +68,7 @@ const confirmPasswordSchema: ParamSchema = {
     options: (value, { req }) => {
       if (value !== req.body.password) {
         throw new ErrorWithStatus({
-          message:USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD,
+          message: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD,
           status: HTTP_STATUS.UNPROCESSABLE_ENTITY
         })
       }
@@ -77,11 +77,12 @@ const confirmPasswordSchema: ParamSchema = {
   }
 }
 
-
-export const passwordValidation = validate(checkSchema({
-  password:passwordSchema,
-  confirmPassword:confirmPasswordSchema
-}))
+export const passwordValidation = validate(
+  checkSchema({
+    password: passwordSchema,
+    confirmPassword: confirmPasswordSchema
+  })
+)
 
 export const loginValidation = validate(
   checkSchema(
@@ -96,24 +97,24 @@ export const loginValidation = validate(
             const user = await databaseService.users.findOne({ email: value })
             if (user === null) {
               throw new ErrorWithStatus({
-                message:USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT,
-                status:HTTP_STATUS.UNPROCESSABLE_ENTITY
+                message: USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT,
+                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
 
             if (user.verify === UserVerifyStatus.Unverified) {
               await databaseService.users.deleteOne({ _id: user._id as ObjectId })
               throw new ErrorWithStatus({
-                message:USERS_MESSAGES.USER_NOT_VERIFY,
-                status:HTTP_STATUS.UNPROCESSABLE_ENTITY,
+                message: USERS_MESSAGES.USER_NOT_VERIFY,
+                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
 
             const isMatch = await compareBcrypt(req.body.password, user.password)
             if (!isMatch) {
               throw new ErrorWithStatus({
-                message:USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT,
-                status:HTTP_STATUS.UNPROCESSABLE_ENTITY
+                message: USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT,
+                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
 
@@ -168,13 +169,13 @@ export const registerValidation = validate(
         custom: {
           options: async (value) => {
             const user = await usersService.checkEmailExist(value)
-            if (Boolean(user)) {
+            if (user) {
               if (user?.verify === UserVerifyStatus.Unverified) {
                 await databaseService.users.deleteOne({ _id: user._id })
               }
 
               throw new ErrorWithStatus({
-                message:USERS_MESSAGES.EMAIL_ALREADY_EXISTS,
+                message: USERS_MESSAGES.EMAIL_ALREADY_EXISTS,
                 status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
@@ -197,15 +198,15 @@ export const accessTokenValidation = validate(
           options: async (value, { req }) => {
             if (value === '') {
               throw new ErrorWithStatus({
-                message:USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
-                status:HTTP_STATUS.UNPROCESSABLE_ENTITY
+                message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
+                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
             const access = value.split(' ')
             if (access[0] !== 'Bearer') {
               throw new ErrorWithStatus({
-                message:USERS_MESSAGES.LOGOUT_INVALID,
-                status:HTTP_STATUS.UNPROCESSABLE_ENTITY,
+                message: USERS_MESSAGES.LOGOUT_INVALID,
+                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             } else if (access[0] === 'Bearer') {
               const accessToken = access[1]
@@ -234,7 +235,7 @@ export const refreshTokenValidation = validate(
         options: async (value, { req }) => {
           if (value === '') {
             throw new ErrorWithStatus({
-              message:USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED,
+              message: USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED,
               status: HTTP_STATUS.UNPROCESSABLE_ENTITY
             })
           }
@@ -249,7 +250,7 @@ export const refreshTokenValidation = validate(
 
             if (refresh === null) {
               throw new ErrorWithStatus({
-                message:USERS_MESSAGES.REFRESH_TOKEN_IS_INVALID,
+                message: USERS_MESSAGES.REFRESH_TOKEN_IS_INVALID,
                 status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
@@ -257,7 +258,7 @@ export const refreshTokenValidation = validate(
             req.decoded_refresh_token = decoded
             return true
           } catch (error: any) {
-              throw error;
+            throw error
           }
         }
       }
@@ -273,10 +274,9 @@ export const verifyEmailValidation = validate(
           options: async (value, { req }) => {
             const token = value.trim()
 
-
             if (token === '') {
               throw new ErrorWithStatus({
-                message:USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
+                message: USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
                 status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
@@ -289,7 +289,7 @@ export const verifyEmailValidation = validate(
 
               return true
             } catch (error) {
-                throw error
+              throw error
             }
           }
         }
@@ -312,31 +312,31 @@ export const sendAgainVerifyEmailValidation = validate(
 
             if (value === '') {
               throw new ErrorWithStatus({
-                message:'Not Empty User ID',
+                message: 'Not Empty User ID',
                 status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
 
-            try{
+            try {
               const user = await databaseService.users.findOne({ email: email })
               if (!user) {
                 throw new ErrorWithStatus({
-                  message:USERS_MESSAGES.USER_NOT_FOUND,
+                  message: USERS_MESSAGES.USER_NOT_FOUND,
                   status: HTTP_STATUS.UNPROCESSABLE_ENTITY
                 })
               }
 
               if (user.verify === UserVerifyStatus.Verified) {
                 throw new ErrorWithStatus({
-                  message:USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE,
+                  message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE,
                   status: HTTP_STATUS.UNPROCESSABLE_ENTITY
                 })
               }
 
               req.user = user
               return true
-            } catch(error){
-                throw error
+            } catch (error) {
+              throw error
             }
           }
         }
@@ -346,194 +346,202 @@ export const sendAgainVerifyEmailValidation = validate(
   )
 )
 
-
-
-export const forgotPasswordValidation = validate(checkSchema({
-  email:{
-    notEmpty: {
-      errorMessage:USERS_MESSAGES.EMAIL_IS_REQUIRED
-    },
-    isEmail: {
-      errorMessage:USERS_MESSAGES.EMAIL_IS_INVALID
-    },
-    trim:true,
-    custom:{
-      options: async (value,{req}) => {
-          if(value ===''){
-            throw new ErrorWithStatus({
-              message: USERS_MESSAGES.EMAIL_IS_REQUIRED,
-              status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-            });
-          }
-
-          try{
-            const user = await databaseService.users.findOne({email:value});
-            if(!user){
+export const forgotPasswordValidation = validate(
+  checkSchema(
+    {
+      email: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.EMAIL_IS_REQUIRED
+        },
+        isEmail: {
+          errorMessage: USERS_MESSAGES.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            if (value === '') {
               throw new ErrorWithStatus({
-                message: USERS_MESSAGES.USER_NOT_FOUND,
+                message: USERS_MESSAGES.EMAIL_IS_REQUIRED,
                 status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-              });
+              })
             }
 
-            if(user.verify === UserVerifyStatus.Unverified){
-              await databaseService.users.deleteOne({ _id: user._id });
+            try {
+              const user = await databaseService.users.findOne({ email: value })
+              if (!user) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.USER_NOT_FOUND,
+                  status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                })
+              }
+
+              if (user.verify === UserVerifyStatus.Unverified) {
+                await databaseService.users.deleteOne({ _id: user._id })
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.USER_NOT_VERIFY,
+                  status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                })
+              }
+
+              req.user = user
+              return true
+            } catch (error) {
+              throw error
+            }
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const resetPasswordValidation = validate(
+  checkSchema(
+    {
+      token: {
+        custom: {
+          options: async (value, { req }) => {
+            if (value === '') {
               throw new ErrorWithStatus({
-                message: USERS_MESSAGES.USER_NOT_VERIFY,
+                message: USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
                 status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-              });
+              })
             }
 
-            req.user = user;
-            return true;
-          } catch(error){
-            throw error;
+            try {
+              const verify = await verifyToken({
+                token: value,
+                secretOrPublicKey: process.env.SECRECT_KEY_FORGOTPASSWORD as string
+              })
+
+              req.decoded_verify_forgot_password_token = verify
+
+              return true
+            } catch (error) {
+              throw error
+            }
           }
-
-
-      }
-    }
-  }
-},['body']))
-
-export const resetPasswordValidation = validate(checkSchema({
-  token:{
-    custom:{
-      options: async (value,{req}) => {
-        if(value === ''){
-          throw new ErrorWithStatus({
-            message: USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
-            status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-          });
         }
-
-        try {
-          const verify = await verifyToken({
-            token:value,
-            secretOrPublicKey:process.env.SECRECT_KEY_FORGOTPASSWORD as string,
-          })
-
-            req.decoded_verify_forgot_password_token = verify;
-
-            return true;
-
-
-
-        } catch(error){
-          throw error
-        }
-
       }
-    }
-  }
-},['query']))
-
-export const updateProfileValidation = validate(checkSchema({
-  firstName: {
-    isString: true,
-    trim: true,
-    optional: { options: { nullable: true } },
-
-  },
-  lastName: {
-    isString: true,
-    trim: true,
-    optional: { options: { nullable: true } },
-  },
-  dateOfBirth: {
-    isDate: true,
-    optional: { options: { nullable: true } },
-  },
-  avatar: {
-    isString: { errorMessage: 'Avatar must be a string.' },
-    optional: { options: { nullable: true } }, // Allow null or undefined
-    matches: {
-      options: /^data:image\/[a-zA-Z]+;base64,[A-Za-z0-9+/]+={0,2}$/,
-      errorMessage: 'Avatar must be a valid Base64 image string.',
     },
-  }
-}, ['body']));
+    ['query']
+  )
+)
 
-
-export const changeNewPasswordEmailValidation = validate(checkSchema({
-  email:{
-    notEmpty:true,
-    isEmail: true,
-    trim: true,
-    custom:{
-      options: async (value, {req}) => {
-        try {
-          const user = await databaseService.users.findOne({email:value});
-          if(!user){
-            throw new ErrorWithStatus({
-              message: USERS_MESSAGES.USER_NOT_FOUND,
-              status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-            });
-          }
-
-          if(user.verify === UserVerifyStatus.Unverified){
-            throw new ErrorWithStatus({
-              message: USERS_MESSAGES.USER_NOT_VERIFY,
-              status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-            });
-          }
-
-          req.user =user;
-          return true;
-        }  catch (e:any) {
-          throw e;
+export const updateProfileValidation = validate(
+  checkSchema(
+    {
+      firstName: {
+        isString: true,
+        trim: true,
+        optional: { options: { nullable: true } }
+      },
+      lastName: {
+        isString: true,
+        trim: true,
+        optional: { options: { nullable: true } }
+      },
+      dateOfBirth: {
+        isDate: true,
+        optional: { options: { nullable: true } }
+      },
+      avatar: {
+        isString: { errorMessage: 'Avatar must be a string.' },
+        optional: { options: { nullable: true } }, // Allow null or undefined
+        matches: {
+          options: /^data:image\/[a-zA-Z]+;base64,[A-Za-z0-9+/]+={0,2}$/,
+          errorMessage: 'Avatar must be a valid Base64 image string.'
         }
-
       }
-    }
-  },
-},['body']))
+    },
+    ['body']
+  )
+)
 
+export const changeNewPasswordEmailValidation = validate(
+  checkSchema(
+    {
+      email: {
+        notEmpty: true,
+        isEmail: true,
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            try {
+              const user = await databaseService.users.findOne({ email: value })
+              if (!user) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.USER_NOT_FOUND,
+                  status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                })
+              }
+
+              if (user.verify === UserVerifyStatus.Unverified) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.USER_NOT_VERIFY,
+                  status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                })
+              }
+
+              req.user = user
+              return true
+            } catch (e: any) {
+              throw e
+            }
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
 
 export const changeNewPasswordValidation = validate(
-  checkSchema({
-    oldPassword: {
-      ...passwordSchema,
-      custom: {
-        options: async (value, { req }) => {
-          try {
-            const user = req.user;
-            if (!user) {
-              throw new ErrorWithStatus({
-                message: "User is not set in req",
-                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-              });
+  checkSchema(
+    {
+      oldPassword: {
+        ...passwordSchema,
+        custom: {
+          options: async (value, { req }) => {
+            try {
+              const user = req.user
+              if (!user) {
+                throw new ErrorWithStatus({
+                  message: 'User is not set in req',
+                  status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                })
+              }
+              const isMatch = await compareBcrypt(value, user.password)
+              if (!isMatch) {
+                throw new ErrorWithStatus({
+                  message: 'Wrong Password',
+                  status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                })
+              }
+              return true
+            } catch (e) {
+              throw e
             }
-            const isMatch = await compareBcrypt(value, user.password);
-            if (!isMatch) {
-              throw new ErrorWithStatus({
-                message: "Wrong Password",
-                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-              });
-            }
-            return true;
-          } catch (e) {
-            throw e;
           }
-        },
+        }
       },
-    },
-    newPassword:passwordSchema,
-    confirmNewPassword:{
-      ...confirmPasswordSchema,
-      custom:{
-        options:async (value, {req}) => {
-          if (value !== req.body.newPassword) {
-            throw new ErrorWithStatus({
-              message: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD,
-              status: HTTP_STATUS.UNPROCESSABLE_ENTITY
-            })
+      newPassword: passwordSchema,
+      confirmNewPassword: {
+        ...confirmPasswordSchema,
+        custom: {
+          options: async (value, { req }) => {
+            if (value !== req.body.newPassword) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD,
+                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+              })
+            }
+            return true
           }
-          return true
         }
       }
-    }
-  },['body'])
-);
-
-
-
+    },
+    ['body']
+  )
+)

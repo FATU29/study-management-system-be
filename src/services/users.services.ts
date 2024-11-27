@@ -7,11 +7,10 @@ import { TokenType, UserVerifyStatus } from '~/constants/enum'
 import RefreshToken from '~/models/schemas/refreshtoken.schema'
 import * as process from 'node:process'
 import { sendMail } from '~/utils/email'
-import { passwordController } from '~/controllers/users.controllers'
 import { hashBcrypt } from '~/utils/crypto'
 
 class UsersService {
-  async signAccessToken({ user_id, role, verify }: { user_id: string, role?:string, verify?: number }) {
+  async signAccessToken({ user_id, role, verify }: { user_id: string; role?: string; verify?: number }) {
     try {
       return await signToken({
         payload: {
@@ -64,24 +63,24 @@ class UsersService {
       const user_id = new ObjectId()
       const verifyEmailToken = await this.signVerifyEmailToken({ user_id: String(user_id) })
 
-      const domainNameForVerify = process.env.DOMAIN_NAME + '/users/verify-email?token=' + verifyEmailToken
+      const domainNameForVerify = process.env.DOMAIN_NAME_CLIENT + '/users/verify-email?token=' + verifyEmailToken
 
       const msg = {
         to: payload.email,
-        from: process.env.COMPANY_NAME as string,
-        subject:`Verify Registeration Acoount`,
+        from: process.env.COMPANY_MAIL as string,
+        subject: `Verify Registration Account`,
         text: `Please click here to verify: ${verifyEmailToken}`,
         html: `<b>Please click here to verify:</b>
-        <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+        <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `
       }
 
-      await sendMail(msg);
+      sendMail(msg)
       await databaseService.users.insertOne(
         new User({
           ...payload,
           _id: user_id,
           verify: UserVerifyStatus.Unverified,
-          role:"USER"
+          role: 'USER'
         })
       )
     } catch (error) {
@@ -89,9 +88,12 @@ class UsersService {
     }
   }
 
-  async signAccessAndRefreshToken({ user_id,role, verify }: { user_id: string,role?:string, verify?: number }) {
+  async signAccessAndRefreshToken({ user_id, role, verify }: { user_id: string; role?: string; verify?: number }) {
     try {
-      return await Promise.all([this.signAccessToken({ user_id,role, verify }), this.signRefreshToken({ user_id, verify })])
+      return await Promise.all([
+        this.signAccessToken({ user_id, role, verify }),
+        this.signRefreshToken({ user_id, verify })
+      ])
     } catch (error) {
       throw error
     }
@@ -140,20 +142,19 @@ class UsersService {
     }
   }
 
-  async login({ user_id,role }: { user_id: string,role?:string }) {
+  async login({ user_id, role }: { user_id: string; role?: string }) {
     try {
       const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
         user_id,
         role
       })
       const { iat, exp } = await this.decodeRefreshToken(refresh_token)
-
       await databaseService.refreshTokens.insertOne(
         new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token, iat, exp })
       )
       return {
-        access_token,
-        refresh_token
+        accessToken: access_token,
+        refreshToken: refresh_token
       }
     } catch (error) {
       throw error
@@ -196,18 +197,18 @@ class UsersService {
         user_id: String(String(user._id))
       })
 
-      const domainNameForVerify = process.env.DOMAIN_NAME + '/users/verify-email?token=' + newTokenVerifyEmail
+      const domainNameForVerify = process.env.DOMAIN_NAME_CLIENT + '/users/verify-email?token=' + newTokenVerifyEmail
 
       const msg = {
         to: user.email,
-        from: process.env.COMPANY_NAME as string,
-        subject:`Verify Registeration Acoount`,
+        from: process.env.COMPANY_MAIL as string,
+        subject: `Verify Registration Account`,
         text: `Please click here to verify: ${newTokenVerifyEmail}`,
         html: `<b>Please click here to verify:</b>
-        <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `,
+        <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `
       }
 
-      await sendMail(msg);
+      sendMail(msg)
     } catch (error) {
       throw error
     }
@@ -218,7 +219,7 @@ class UsersService {
       const id = user._id
       const forgotPasswordToken = await this.signVerifyForgotPasswordToken({ user_id: String(id) })
 
-      const domainNameForVerify = process.env.DOMAIN_NAME + '/users/reset-password?token=' + forgotPasswordToken
+      const domainNameForVerify = process.env.DOMAIN_NAME_CLIENT + '/users/reset-password?token=' + forgotPasswordToken
 
       const msg = {
         to: user.email,
@@ -229,7 +230,7 @@ class UsersService {
         <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `
       }
 
-      await sendMail(msg)
+      sendMail(msg)
     } catch (error) {
       throw error
     }

@@ -34,7 +34,7 @@ const initData = async () => {
       console.log("Admin-Account initialized successfully")
 
     } else {
-      console.log("Teacher-Account already exists")
+      console.log("Admin-Account already exists")
     }
 
 
