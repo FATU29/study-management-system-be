@@ -10,7 +10,8 @@ import {
   getMeController,
   updateProfileController,
   passwordController,
-  changePasswordController
+  changePasswordController,
+  oauthController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidation,
@@ -58,5 +59,7 @@ usersRouter.post(
   changeNewPasswordValidation,
   wrapRequestHandler(changePasswordController)
 )
+
+usersRouter.get('/oauth/google', wrapRequestHandler(oauthController))
 
 export default usersRouter

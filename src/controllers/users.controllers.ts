@@ -19,6 +19,7 @@ import databaseService from '~/services/database.services'
 import { UserVerifyStatus } from '~/constants/enum'
 import UsersServices from '~/services/users.services'
 import HTTP_STATUS from '~/constants/httpstatus'
+import process from 'node:process'
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   const { email, password } = req.body
@@ -161,4 +162,20 @@ export const changePasswordController = async (
     message: 'Change password successfully',
     status: HTTP_STATUS.OK
   })
+}
+
+export const oauthController = async (req: Request<any, any, any>, res: Response) => {
+  const { code } = req.query
+  const tokens = await usersService.oauthService(code as string)
+
+  if(tokens){
+    const url = process.env.CLIENT_REDIRECT_URL_GOOGLE
+    res.redirect(`${url}?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`);
+  } else {
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
+      message: 'Login By Google Fail',
+      status: HTTP_STATUS.BAD_REQUEST,
+      data: null
+    })
+  }
 }

@@ -1,6 +1,6 @@
 import User from '~/models/schemas/user.schema'
 import databaseService from './database.services'
-import { ObjectId } from 'mongodb'
+import { ObjectId, UUID } from 'mongodb'
 import { RegisterReqBody, UpdateProfileRequest } from '~/controllers/request/user.request'
 import { signToken, verifyToken } from '~/utils/jwt'
 import { TokenType, UserVerifyStatus } from '~/constants/enum'
@@ -8,6 +8,7 @@ import RefreshToken from '~/models/schemas/refreshtoken.schema'
 import * as process from 'node:process'
 import { sendMail } from '~/utils/email'
 import { hashBcrypt } from '~/utils/crypto'
+import axios from 'axios'
 
 class UsersService {
   async signAccessToken({ user_id, role, verify }: { user_id: string; role?: string; verify?: number }) {
@@ -278,6 +279,100 @@ class UsersService {
       )
     } catch (error) {
       throw error
+    }
+  }
+
+  async getOAuthGoogleToken(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URL,
+      grant_type: 'authorization_code'
+    }
+    const { data } = await axios.post('https://oauth2.googleapis.com/token', body, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    return data
+  }
+
+  async getGoogleInfo(access_token: string, id_token: string) {
+    try {
+      const { data } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
+        params: { access_token, alt: 'json' }
+      })
+
+      return data
+    } catch (error) {
+      console.error('Error in getGoogleInfo:', error)
+      throw new Error('Failed to process Google user information.')
+    }
+  }
+
+  async oauthService(code: string) {
+    const { id_token, access_token } = await this.getOAuthGoogleToken(code)
+    const data = await this.getGoogleInfo(access_token, id_token)
+    const dataInDataBase = await databaseService.users.findOne(
+      { email: data.email },
+      {
+        projection: { password: 0 }
+      }
+    )
+
+    if (dataInDataBase) {
+      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({
+        user_id: String(dataInDataBase._id),
+        role: dataInDataBase.role
+      })
+
+      const { iat, exp } = await this.decodeRefreshToken(refreshToken)
+      await databaseService.refreshTokens.insertOne(
+        new RefreshToken({ user_id: new ObjectId(dataInDataBase._id), token: refreshToken, iat, exp })
+      )
+
+      return {
+        accessToken,
+        refreshToken
+      }
+    } else {
+      const generatedPassword = new UUID()
+      const msg = {
+        to: data.email,
+        from: process.env.COMPANY_MAIL as string,
+        subject: `Verify Registration Account`,
+        text: `Your password: ${generatedPassword} (You can change it in ForgotPassword or ChangePassword)`,
+        html: `<p>Your password: <b>${generatedPassword}</b></p><p>You can change it in <i>Forgot Password</i> or <i>Change Password</i>.</p>`
+      };
+
+      sendMail(msg)
+
+      const user: User = new User({
+        _id: new ObjectId(),
+        email: data.email,
+        role: 'USER',
+        password: await hashBcrypt(String(generatedPassword)),
+        verify: UserVerifyStatus.Verified,
+        avatar: data.picture,
+        lastName: data.family_name,
+        firstName: data.given_name
+      })
+      await databaseService.users.insertOne(user)
+      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({
+        user_id: String(user._id),
+        role: user.role
+      })
+
+      const { iat, exp } = await this.decodeRefreshToken(refreshToken)
+      await databaseService.refreshTokens.insertOne(
+        new RefreshToken({ user_id: new ObjectId(user._id), token: refreshToken, iat, exp })
+      )
+
+      return {
+        accessToken,
+        refreshToken
+      }
     }
   }
 }
