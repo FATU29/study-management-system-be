@@ -10,7 +10,7 @@ export default [
   ...tseslint.configs.recommended,
   {
     plugins: {
-      prettier: eslintPluginPrettier
+      // prettier: eslintPluginPrettier
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',

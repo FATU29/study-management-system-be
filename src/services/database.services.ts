@@ -4,6 +4,7 @@ import User from '~/models/schemas/user.schema'
 import RefreshToken from '~/models/schemas/refreshtoken.schema'
 import { Course } from '~/models/schemas/course.schema'
 import { RoleType } from '~/models/schemas/roleType.schema'
+import { Notification } from '~/models/schemas/notification.schema'
 dotenv.config()
 
 // Replace the uri string with your connection string.
@@ -50,6 +51,10 @@ class DatabaseService {
 
   get role():Collection<RoleType>{
     return this.database.collection("roles");
+  }
+
+  get notifications():Collection<Notification>{
+    return this.database.collection("notifications");
   }
 }
 
