@@ -5,6 +5,7 @@ export interface INotification {
   title:string,
   content:string,
   userId:string,
+  courseId:string,
   isRead:boolean
 }
 
@@ -14,6 +15,7 @@ export class Notification {
   content:string
   userId:string
   isRead:boolean
+  courseId:string
 
   constructor(notification:INotification) {
     this._id = notification._id
@@ -21,5 +23,6 @@ export class Notification {
     this.content = notification.content
     this.userId = notification.userId
     this.isRead = notification.isRead
+    this.courseId = notification.courseId
   }
 }

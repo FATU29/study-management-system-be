@@ -1,4 +1,4 @@
-import {Request, Response} from 'express';
+import e, {Request, Response} from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { Notification, INotification } from '~/models/schemas/notification.schema';
 import { ObjectId } from 'mongodb';
@@ -15,12 +15,15 @@ export const addNotificationController = async (
     const content = req.body.content;
     const userId = req.body.userId;
     const isRead = req.body.isRead;
+    const courseId = req.body.courseId;
+
 
     const objectNotification = new Notification({
         _id,
         title,
         content,
         userId,
+        courseId,
         isRead,
     })
 
@@ -65,8 +68,8 @@ export const deleteNotificationController = async (
     req: Request<ParamsDictionary, any, NotificationRequest>,
     res: Response
 ) => {
-    const userId = new ObjectId(req.params.userId);
-    const result = await notificationServices.deleteNotification(userId);
+    const id = new ObjectId(req.params.id);
+    const result = await notificationServices.deleteNotification(id);
 
     if(result){
         res.json({
@@ -85,4 +88,25 @@ export const deleteNotificationController = async (
             }
         })
     }
+}
+
+// update isRead
+export const updateNotificationController = async (
+    req: Request<ParamsDictionary, any, NotificationRequest>,
+    res: Response
+) => {
+  
+    const _id  = new ObjectId(req.params.id);
+
+    const data = req.body;
+
+    const result = await notificationServices.updateNotification(_id, data);
+
+    res.json({
+        message:"Update Notification Successfully",
+        status:HTTP_STATUS.OK,
+        data:{
+            notification: result
+        }
+    })
 }

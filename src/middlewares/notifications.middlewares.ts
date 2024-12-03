@@ -44,9 +44,13 @@ export const addNotificationValidation = checkSchema({
     userId: {
         notEmpty: true,
     },
+    courseId:{
+        notEmpty: true,
+    },
     isRead: {
         notEmpty: true,
     },
+
 });
 
 export const deleteNotificationValidation = checkSchema({
@@ -94,5 +98,32 @@ export const getNotificationValidation = checkSchema({
             }
         },
         },
+    },
+});
+// update isRead
+export const updateNotificationValidation = checkSchema({
+    notificationId: {
+        custom: {
+        options: async (value, { req }) => {
+            try {
+            const notification = await databaseService.notifications.findOne({
+                _id: new ObjectId(value),
+            });
+            if (!notification) {
+                throw new ErrorWithStatus({
+                message: "Notification not found",
+                status: HTTP_STATUS.NOT_FOUND,
+                });
+            }
+            req.notification = notification;
+            return true;
+            } catch (error: any) {
+            throw error;
+            }
+        },
+        },
+    },
+    isRead: {
+        notEmpty: true,
     },
 });
