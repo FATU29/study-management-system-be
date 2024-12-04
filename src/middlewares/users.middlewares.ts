@@ -9,7 +9,6 @@ import { verifyToken } from '~/utils/jwt'
 import validate from '~/utils/validate'
 import * as process from 'node:process'
 import { UserVerifyStatus } from '~/constants/enum'
-import * as string_decoder from 'node:string_decoder'
 import HTTP_STATUS from '~/constants/httpstatus'
 
 const passwordSchema: ParamSchema = {
@@ -255,7 +254,7 @@ export const refreshTokenValidation = validate(
               })
             }
 
-            req.decoded_refresh_token = decoded
+            req.decoded_refreshToken = decoded
             return true
           } catch (error: any) {
             throw error

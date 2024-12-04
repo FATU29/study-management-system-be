@@ -7,6 +7,7 @@ import { defaultErrorHandler } from './middlewares/error.middlewares'
 import dotenv from 'dotenv'
 import process from 'node:process'
 import cors from 'cors'
+import refreshTokenRouter from '~/routes/refreshToken.routes'
 dotenv.config()
 
 const port = process.env.PORT
@@ -19,14 +20,14 @@ app.use(
   cors({
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 )
 
 app.use('/api/users', usersRouter)
 app.use('/api/courses', coursesRouter)
 app.use('/api/role', roleRouter)
-
+app.use('/api/refresh-token', refreshTokenRouter)
 app.use(defaultErrorHandler)
 
 app.listen(port, () => {
