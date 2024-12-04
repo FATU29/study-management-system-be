@@ -17,7 +17,7 @@ class CoursesServices {
       { _id: _id },
       {
         $set: {
-          ...data,
+          ...data
         },
         $currentDate: {
           updated_at: true
@@ -30,7 +30,7 @@ class CoursesServices {
   }
 
   async deleteCourse(_id: ObjectId) {
-    return await databaseService.courses.deleteOne({ _id: _id });
+    return await databaseService.courses.deleteOne({ _id: _id })
   }
 }
 

@@ -5,6 +5,8 @@ import { ObjectId } from 'mongodb'
 export interface RegisterReqBody {
   email: string
   password: string
+  lastName: string
+  firstName: string
 }
 
 export interface LoginReqBody {
@@ -15,6 +17,7 @@ export interface LoginReqBody {
 export interface TokenPayload extends JwtPayload {
   user_id: ObjectId
   token_type: TokenType
+  role:string
   verify?: UserVerifyStatus
   exp: number
   iat: number

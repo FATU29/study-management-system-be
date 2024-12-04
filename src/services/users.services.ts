@@ -30,12 +30,13 @@ class UsersService {
     }
   }
 
-  async signRefreshToken({ user_id, exp, verify }: { user_id: string; exp?: number; verify?: number }) {
+  async signRefreshToken({ user_id, role ,exp, verify }: { user_id: string; role?:string ; exp?: number; verify?: number }) {
     try {
       if (exp) {
         return await signToken({
           payload: {
             user_id,
+            role,
             token_type: TokenType.RefreshToken,
             exp,
             verify
@@ -75,7 +76,10 @@ class UsersService {
         <a href="${domainNameForVerify}" style="color: #007bff; text-decoration: underline;">${domainNameForVerify}</a> `
       }
 
-      sendMail(msg)
+        sendMail(msg)
+
+
+
       await databaseService.users.insertOne(
         new User({
           ...payload,
@@ -89,11 +93,11 @@ class UsersService {
     }
   }
 
-  async signAccessAndRefreshToken({ user_id, role, verify }: { user_id: string; role?: string; verify?: number }) {
+  async signAccessAndRefreshToken({ user_id, role, verify }: { user_id: string; role: string; verify?: number }) {
     try {
       return await Promise.all([
         this.signAccessToken({ user_id, role, verify }),
-        this.signRefreshToken({ user_id, verify })
+        this.signRefreshToken({ user_id, role, verify })
       ])
     } catch (error) {
       throw error
@@ -143,15 +147,16 @@ class UsersService {
     }
   }
 
-  async login({ user_id, role }: { user_id: string; role?: string }) {
+  async login(user: User) {
     try {
+      const user_id: string = user._id?.toString() ? user._id?.toString() : ""
       const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-        user_id,
-        role
+        user_id : user_id,
+        role: user.role || ""
       })
       const { iat, exp } = await this.decodeRefreshToken(refresh_token)
       await databaseService.refreshTokens.insertOne(
-        new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token, iat, exp })
+        new RefreshToken({ user_id: new ObjectId(user._id?.toString()), token: refresh_token, iat, exp })
       )
       return {
         accessToken: access_token,
@@ -324,7 +329,7 @@ class UsersService {
     if (dataInDataBase) {
       const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({
         user_id: String(dataInDataBase._id),
-        role: dataInDataBase.role
+        role: dataInDataBase.role || ""
       })
 
       const { iat, exp } = await this.decodeRefreshToken(refreshToken)
@@ -361,7 +366,7 @@ class UsersService {
       await databaseService.users.insertOne(user)
       const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({
         user_id: String(user._id),
-        role: user.role
+        role: user.role || ""
       })
 
       const { iat, exp } = await this.decodeRefreshToken(refreshToken)

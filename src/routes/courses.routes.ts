@@ -14,8 +14,6 @@ import {
 } from '~/controllers/courses.controllers'
 import { wrapRequestHandler } from '~/utils/handler'
 
-
-
 const coursesRouter = express.Router()
 
 coursesRouter.post('/add', accessTokenValidation, addCourseValidation, wrapRequestHandler(addCourseController))

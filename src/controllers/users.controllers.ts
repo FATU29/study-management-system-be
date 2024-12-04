@@ -22,9 +22,9 @@ import HTTP_STATUS from '~/constants/httpstatus'
 import process from 'node:process'
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
-  const { email, password } = req.body
+  const { email, password , lastName ,firstName } = req.body
   const hashedPassword = await hashBcrypt(password)
-  await usersService.register({ email: email, password: hashedPassword })
+  await usersService.register({ email: email, password: hashedPassword , lastName,firstName })
   res.json({
     message: USERS_MESSAGES.REGISTER_SUCCESS,
     status: HTTP_STATUS.CREATED
@@ -35,11 +35,14 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   const user = req.user as User
   const user_id = user._id as ObjectId
   const role = user.role
-  const result = await usersService.login({ user_id: user_id.toString(), role })
+  const result = await usersService.login(user)
   res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     status: HTTP_STATUS.OK,
-    data: result
+    data: {
+      result,
+      user
+    }
   })
 }
 
