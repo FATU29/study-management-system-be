@@ -1,10 +1,11 @@
 import validate from '~/utils/validate'
-import { checkSchema } from 'express-validator'
+import { check, checkSchema } from 'express-validator'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpstatus'
 import { createSlug } from '~/utils/slugify'
 import databaseService from '~/services/database.services'
 import { ObjectId } from 'mongodb'
+import { NextFunction, Response } from 'express'
 
 export const addCourseValidation = validate(
   checkSchema(
@@ -104,10 +105,10 @@ export const updateCourseValidation = validate(
   )
 )
 
-export const deleteCourseValidation = validate(
+export const courseValidation = validate(
   checkSchema(
     {
-      id: {
+      courseId: {
         notEmpty: true,
         trim: true,
         custom: {
@@ -116,7 +117,7 @@ export const deleteCourseValidation = validate(
             if (role !== 'ADMIN') {
               throw new ErrorWithStatus({
                 message: 'Just admin has permission',
-                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                status: HTTP_STATUS.FORBIDDEN
               })
             }
 
@@ -137,7 +138,7 @@ export const deleteCourseValidation = validate(
         }
       }
     },
-    ['params']
+    ['body']
   )
 )
 
@@ -155,3 +156,20 @@ export const getCourseValidation = validate(
     ['params']
   )
 )
+
+export const forAdminValidation = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const { role } = req.decoded_authorization
+    if (role !== 'ADMIN') {
+      throw new ErrorWithStatus({
+        message: 'Just admin has permission',
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    }
+    next();
+  } catch (error) {
+    next(error)
+  }
+}
+
+
