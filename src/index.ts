@@ -10,6 +10,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io'
 import process from 'node:process'
 import cors from 'cors'
+import refreshTokenRouter from '~/routes/refreshToken.routes'
 dotenv.config()
 
 const port = process.env.PORT
@@ -32,6 +33,8 @@ app.use('/api/role', roleRouter)
 app.use('/api/notifications', notificationsRouter)
 
 app.use(defaultErrorHandler);
+app.use('/api/refresh-token', refreshTokenRouter)
+app.use(defaultErrorHandler)
 
 
 const server = createServer(app);

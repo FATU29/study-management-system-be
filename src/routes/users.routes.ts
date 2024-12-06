@@ -41,7 +41,6 @@ usersRouter.post(
   wrapRequestHandler(sendAgainVerifyEmailController)
 )
 
-
 usersRouter.get('/get-me', accessTokenValidation, wrapRequestHandler(getMeController))
 usersRouter.patch(
   '/update-profile',
