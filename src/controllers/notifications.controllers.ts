@@ -50,9 +50,6 @@ export const getNotificationController = async (
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     
-    // Calculate offset
-    const offset = (page - 1) * limit;
-
     try {
         // Modify service call to include pagination
         const { notifications, pagination } = await notificationServices.getNotification(userId, {
