@@ -15,6 +15,8 @@ export interface NotificationRequest {
     read?: boolean;
   
     courseId?: string;
+
+    time?: Date;
   }
 export interface GetNotificationRequest{
     _id:ObjectId

@@ -50,7 +50,9 @@ export const addNotificationValidation = checkSchema({
     isRead: {
         notEmpty: true,
     },
-
+    time: {
+        notEmpty: true,
+    },
 });
 
 export const deleteNotificationValidation = checkSchema({

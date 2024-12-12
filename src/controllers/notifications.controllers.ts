@@ -16,6 +16,7 @@ export const addNotificationController = async (
     const userId = req.body.userId;
     const isRead = req.body.isRead;
     const courseId = req.body.courseId;
+    const time = new Date();
 
 
     const objectNotification = new Notification({
@@ -25,6 +26,7 @@ export const addNotificationController = async (
         userId,
         courseId,
         isRead,
+        time
     })
 
     const result = await notificationServices.createNotification(objectNotification);
@@ -43,24 +45,50 @@ export const getNotificationController = async (
     res: Response
 ) => {
     const userId = req.params.userId;
-    const result = await notificationServices.getNotification(userId);
+    
+    // Extract page and limit from query parameters, with defaults
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    
+    try {
+        // Modify service call to include pagination
+        const { notifications, pagination } = await notificationServices.getNotification(userId, {
+            page,
+            limit
+        });
 
-    if(result){
-        res.json({
-        message:"Get Notification Successfully",
-        status:HTTP_STATUS.OK,
-        data:{
-            notifications: result
+        // Check if notifications exist
+        if (notifications && notifications.length > 0) {
+            res.json({
+                message: "Get Notifications Successfully",
+                status: HTTP_STATUS.OK,
+                data: {
+                    notifications,
+                    pagination
+                }
+            });
+        } else {
+            res.json({
+                message: "No notifications found",
+                status: HTTP_STATUS.NOT_FOUND,
+                data: {
+                    notifications: [],
+                    pagination: {
+                        currentPage: page,
+                        itemsPerPage: limit,
+                        totalItems: 0,
+                        totalPages: 0
+                    }
+                }
+            });
         }
-    })
-    } else {
-        res.json({
-            message:"Notification not found",
-            status:HTTP_STATUS.NOT_FOUND,
-            data:{
-                notification: result
-            }
-        })
+    } catch (error) {
+        // Handle any potential errors
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            message: "Error retrieving notifications",
+            status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            data: null
+        });
     }
 }
 

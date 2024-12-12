@@ -8,11 +8,38 @@ class NotificationsServices {
     return await databaseService.notifications.insertOne(notification);
   }
 
-  // get all notification by userId
-  async getNotification(userId: string) {
-    return await databaseService.notifications.find({ userId: userId }).toArray();
+  // get notification paging by userId
+  async getNotification(userId: string, options: { 
+    page?: number; 
+    limit?: number; 
+  } = {}) {
+    const page = options.page || 1;
+    const limit = options.limit || 10;
+    const skip = (page - 1) * limit;
+  
+  
+    // Get total count of notifications for this user
+    const totalCount = await databaseService.notifications.countDocuments({ 
+      userId: userId 
+    });
+  
+    // Fetch paginated notifications
+    const notifications = await databaseService.notifications
+      .find({ userId: userId })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+  
+    return {
+      notifications,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    };
   }
-
 
 
   async updateNotification(_id: ObjectId, data: NotificationRequest) {
