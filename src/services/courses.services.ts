@@ -2,7 +2,6 @@ import { Course } from '~/models/schemas/course.schema'
 import databaseService from '~/services/database.services'
 import { ObjectId } from 'mongodb'
 import { CourseRequest } from '~/controllers/request/course.request'
-import { title } from 'node:process'
 
 class CoursesServices {
   async createCourse(course: Course) {
@@ -125,6 +124,7 @@ class CoursesServices {
       }
     )
   }
+  
   async deleteEnrollmentInCourse(courseId: ObjectId, enrollmentId: string) {
     return await databaseService.courses.updateOne(
       {
@@ -226,16 +226,16 @@ class CoursesServices {
       .aggregate([
         {
           $addFields: {
-            teacherId: {
+            teacherIds: {
               $map: {
-                input: '$teacherId',
+                input: '$teacherIds',
                 as: 'id',
                 in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng teacherId thành ObjectId
               }
             },
-            enrollmentId: {
+            enrollmentIds: {
               $map: {
-                input: '$enrollmentId',
+                input: '$enrollmentIds',
                 as: 'id',
                 in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng enrollmentId thành ObjectId
               }
@@ -245,7 +245,7 @@ class CoursesServices {
         {
           $lookup: {
             from: 'users',
-            localField: 'teacherId',
+            localField: 'teacherIds',
             foreignField: '_id',
             as: 'teacherDetails'
           }
@@ -253,7 +253,7 @@ class CoursesServices {
         {
           $lookup: {
             from: 'users',
-            localField: 'enrollmentId',
+            localField: 'enrollmentIds',
             foreignField: '_id',
             as: 'enrollmentDetails'
           }

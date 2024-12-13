@@ -11,6 +11,7 @@ import { Server } from 'socket.io'
 import process from 'node:process'
 import cors from 'cors'
 import refreshTokenRouter from '~/routes/refreshToken.routes'
+import searchRouter from './routes/search.routes'
 dotenv.config()
 
 const port = process.env.PORT
@@ -27,11 +28,13 @@ app.use(
   })
 )
 
+
+
 app.use('/api/users', usersRouter)
 app.use('/api/courses', coursesRouter)
 app.use('/api/role', roleRouter)
 app.use('/api/notifications', notificationsRouter)
-
+app.use('/api/search',searchRouter);
 app.use(defaultErrorHandler);
 app.use('/api/refresh-token', refreshTokenRouter)
 app.use(defaultErrorHandler)

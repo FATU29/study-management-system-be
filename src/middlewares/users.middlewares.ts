@@ -195,6 +195,7 @@ export const accessTokenValidation = validate(
       Authorization: {
         custom: {
           options: async (value, { req }) => {
+            
             if (value === '') {
               throw new ErrorWithStatus({
                 message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
@@ -214,6 +215,7 @@ export const accessTokenValidation = validate(
                   token: accessToken,
                   secretOrPublicKey: process.env.SECRECT_KEY_ACCESSTOKEN as string
                 })
+                
                 return true
               } catch (error: any) {
                 throw error
