@@ -9,3 +9,13 @@ export const wrapRequestHandler = <P>(func: RequestHandler<P, any, any, any>) =>
     }
   }
 }
+
+export const simpleControlWrapper = (func: Function) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await func(req, res, next)
+    } catch (error) {
+      next(error)
+    }
+  }
+}
