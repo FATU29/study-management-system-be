@@ -45,7 +45,7 @@ class SearchService {
           },
           {
             $project: {
-              password: 0 
+              password: 0
             }
           }
         ])
@@ -162,8 +162,7 @@ class SearchService {
 
     if (courseId) {
       const course = await databaseService.courses.findOne({ _id: courseId })
-      const arrayTeachers = course?.teacherIds?.map((id) => new ObjectId(id));
-
+      const arrayTeachers = course?.teacherIds?.map((id) => new ObjectId(id))
 
       if (!arrayTeachers || arrayTeachers.length === 0) return []
 
@@ -192,7 +191,7 @@ class SearchService {
     if (!content) return null
     if (courseId) {
       const course = await databaseService.courses.findOne({ _id: courseId })
-      const arrayEnrollment = course?.enrollmentIds?.map((id) => new ObjectId(id));
+      const arrayEnrollment = course?.enrollmentIds?.map((id) => new ObjectId(id))
       const data = await databaseService.users
         .aggregate([
           {
@@ -212,6 +211,56 @@ class SearchService {
       return data
     }
     return []
+  }
+
+  async searchCourse(content: string, page: number, perPage: number) {
+    if (!content || typeof content !== 'string' || content.trim() === '') {
+      return { rows: [], length: 0 };
+    }
+
+    try {
+      const skip = (page - 1) * perPage
+      const limit = perPage
+
+      const data = await databaseService.courses
+        .aggregate([
+          {
+            $match: {
+              $or: [
+                { title: { $regex: content, $options: 'i' } },
+              ]
+            }
+          },
+          { $skip: skip },
+          { $limit: limit }
+        ])
+        .toArray()
+
+        const lengthArray = await databaseService.courses
+        .aggregate([
+          {
+            $match: {
+              $or: [
+                { title: { $regex: content, $options: 'i' } },
+              ]
+            }
+          },
+          {
+            $count: "totalCount"
+          }
+        ]).toArray();
+      
+      const totalCount = lengthArray.length > 0 ? lengthArray[0].totalCount : 0;
+      
+
+      return {
+        rows: data,
+        length: totalCount
+      }
+    } catch (error) {
+      console.error('Error in searchCourse:', error)
+      throw new Error('Failed to fetch search results')
+    }
   }
 }
 

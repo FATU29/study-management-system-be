@@ -70,8 +70,9 @@ export const updateCourseController = async (req: Request<ParamsDictionary, any,
   })
 }
 
-export const deleteCourseController = async (req: Request<ParamsDictionary, any, CourseRequest>, res: Response) => {
-  const _id = new ObjectId(req.course._id)
+export const deleteCourseController = async (req: Request<ParamsDictionary, any>, res: Response) => {
+  const _id = new ObjectId(req.body.courseId)
+  
   const result = await courseServices.deleteCourse(_id)
 
   res.json({

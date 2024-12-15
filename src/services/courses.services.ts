@@ -42,14 +42,14 @@ class CoursesServices {
               $map: {
                 input: '$teacherId',
                 as: 'id',
-                in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng teacherId thành ObjectId
+                in: { $toObjectId: '$$id' }
               }
             },
             enrollmentId: {
               $map: {
                 input: '$enrollmentId',
                 as: 'id',
-                in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng enrollmentId thành ObjectId
+                in: { $toObjectId: '$$id' }
               }
             }
           }
@@ -119,7 +119,7 @@ class CoursesServices {
       },
       {
         $pull: {
-          teacherId: teacherId
+          teacherIds: teacherId
         }
       }
     )
@@ -132,7 +132,7 @@ class CoursesServices {
       },
       {
         $pull: {
-          enrollmentId: enrollmentId
+          enrollmentIds: enrollmentId
         }
       }
     )
@@ -145,7 +145,7 @@ class CoursesServices {
       },
       {
         $push: {
-          enrollmentId: enrollmentId
+          enrollmentIds: enrollmentId
         }
       }
     )
@@ -159,7 +159,7 @@ class CoursesServices {
       },
       {
         $push: {
-          teacherId: teacherId
+          teacherIds: teacherId
         }
       }
     )
@@ -172,7 +172,7 @@ class CoursesServices {
       },
       {
         $pullAll: {
-          teacherId: teacherIds
+          teacherIds: teacherIds
         }
       }
     )
@@ -185,7 +185,7 @@ class CoursesServices {
       },
       {
         $pullAll: {
-          enrollmentId: enrollmentIds
+          enrollmentIds: enrollmentIds
         }
       }
     )
@@ -198,7 +198,7 @@ class CoursesServices {
       },
       {
         $addToSet: {
-          enrollmentId: {
+          enrollmentIds: {
             $each: enrollmentIds
           }
         }
@@ -213,7 +213,7 @@ class CoursesServices {
       },
       {
         $addToSet: {
-          teacherId: {
+          teacherIds: {
             $each: teacherIds
           }
         }
@@ -230,14 +230,14 @@ class CoursesServices {
               $map: {
                 input: '$teacherIds',
                 as: 'id',
-                in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng teacherId thành ObjectId
+                in: { $toObjectId: '$$id' } 
               }
             },
             enrollmentIds: {
               $map: {
                 input: '$enrollmentIds',
                 as: 'id',
-                in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng enrollmentId thành ObjectId
+                in: { $toObjectId: '$$id' } 
               }
             }
           }

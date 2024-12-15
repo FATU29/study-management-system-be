@@ -72,6 +72,20 @@ export const searchUsersInCourseController = async (req: Request, res: Response)
 }
 
 export const searchCoursesController = async (req: Request, res: Response) => {
-  const { page = 1, perPage = 5 } = req.query
+  const page = parseInt(req.query.page as string) || 1
+  const perPage = parseInt(req.query.perPage as string) || 5
   const { content } = req.body
+
+  const data = await searchService.searchCourse(content, page, perPage);
+
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'search searchCourse successfully',
+    code: HTTP_STATUS.OK,
+    page: page,
+    perPage: perPage,
+    totalItems: data.length,
+    data:  data.rows
+  })
+
 }

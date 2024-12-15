@@ -115,6 +115,8 @@ export const courseValidation = validate(
               })
             }
 
+            
+            
             try {
               const course = await databaseService.courses.findOne({ _id: new ObjectId(value) })
               if (!course) {
@@ -123,7 +125,7 @@ export const courseValidation = validate(
                   status: HTTP_STATUS.UNPROCESSABLE_ENTITY
                 })
               }
-
+              
               req.course = course
             } catch (error: any) {
               throw error
