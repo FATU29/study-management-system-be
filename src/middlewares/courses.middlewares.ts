@@ -1,5 +1,5 @@
 import validate from '~/utils/validate'
-import { check, checkSchema } from 'express-validator'
+import { checkSchema } from 'express-validator'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpstatus'
 import { createSlug } from '~/utils/slugify'
@@ -47,12 +47,6 @@ export const addCourseValidation = validate(
             }
           }
         }
-      },
-      teacherId: {
-        notEmpty: true
-      },
-      lessonId: {
-        notEmpty: true
       }
     },
     ['body']
@@ -121,6 +115,8 @@ export const courseValidation = validate(
               })
             }
 
+            
+            
             try {
               const course = await databaseService.courses.findOne({ _id: new ObjectId(value) })
               if (!course) {
@@ -129,7 +125,7 @@ export const courseValidation = validate(
                   status: HTTP_STATUS.UNPROCESSABLE_ENTITY
                 })
               }
-
+              
               req.course = course
             } catch (error: any) {
               throw error
@@ -166,10 +162,8 @@ export const forAdminValidation = async (req: any, res: Response, next: NextFunc
         status: HTTP_STATUS.FORBIDDEN
       })
     }
-    next();
+    next()
   } catch (error) {
     next(error)
   }
 }
-
-
