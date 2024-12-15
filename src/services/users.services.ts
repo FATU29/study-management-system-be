@@ -47,6 +47,7 @@ class UsersService {
       return await signToken({
         payload: {
           user_id,
+          role,
           token_type: TokenType.RefreshToken,
           verify
         },

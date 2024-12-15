@@ -2,7 +2,6 @@ import { Course } from '~/models/schemas/course.schema'
 import databaseService from '~/services/database.services'
 import { ObjectId } from 'mongodb'
 import { CourseRequest } from '~/controllers/request/course.request'
-import { title } from 'node:process'
 
 class CoursesServices {
   async createCourse(course: Course) {
@@ -43,14 +42,14 @@ class CoursesServices {
               $map: {
                 input: '$teacherId',
                 as: 'id',
-                in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng teacherId thành ObjectId
+                in: { $toObjectId: '$$id' }
               }
             },
             enrollmentId: {
               $map: {
                 input: '$enrollmentId',
                 as: 'id',
-                in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng enrollmentId thành ObjectId
+                in: { $toObjectId: '$$id' }
               }
             }
           }
@@ -120,11 +119,12 @@ class CoursesServices {
       },
       {
         $pull: {
-          teacherId: teacherId
+          teacherIds: teacherId
         }
       }
     )
   }
+  
   async deleteEnrollmentInCourse(courseId: ObjectId, enrollmentId: string) {
     return await databaseService.courses.updateOne(
       {
@@ -132,7 +132,7 @@ class CoursesServices {
       },
       {
         $pull: {
-          enrollmentId: enrollmentId
+          enrollmentIds: enrollmentId
         }
       }
     )
@@ -145,7 +145,7 @@ class CoursesServices {
       },
       {
         $push: {
-          enrollmentId: enrollmentId
+          enrollmentIds: enrollmentId
         }
       }
     )
@@ -159,7 +159,7 @@ class CoursesServices {
       },
       {
         $push: {
-          teacherId: teacherId
+          teacherIds: teacherId
         }
       }
     )
@@ -172,7 +172,7 @@ class CoursesServices {
       },
       {
         $pullAll: {
-          teacherId: teacherIds
+          teacherIds: teacherIds
         }
       }
     )
@@ -185,7 +185,7 @@ class CoursesServices {
       },
       {
         $pullAll: {
-          enrollmentId: enrollmentIds
+          enrollmentIds: enrollmentIds
         }
       }
     )
@@ -198,7 +198,7 @@ class CoursesServices {
       },
       {
         $addToSet: {
-          enrollmentId: {
+          enrollmentIds: {
             $each: enrollmentIds
           }
         }
@@ -213,7 +213,7 @@ class CoursesServices {
       },
       {
         $addToSet: {
-          teacherId: {
+          teacherIds: {
             $each: teacherIds
           }
         }
@@ -226,18 +226,18 @@ class CoursesServices {
       .aggregate([
         {
           $addFields: {
-            teacherId: {
+            teacherIds: {
               $map: {
-                input: '$teacherId',
+                input: '$teacherIds',
                 as: 'id',
-                in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng teacherId thành ObjectId
+                in: { $toObjectId: '$$id' } 
               }
             },
-            enrollmentId: {
+            enrollmentIds: {
               $map: {
-                input: '$enrollmentId',
+                input: '$enrollmentIds',
                 as: 'id',
-                in: { $toObjectId: '$$id' } // Chuyển từng phần tử trong mảng enrollmentId thành ObjectId
+                in: { $toObjectId: '$$id' } 
               }
             }
           }
@@ -245,7 +245,7 @@ class CoursesServices {
         {
           $lookup: {
             from: 'users',
-            localField: 'teacherId',
+            localField: 'teacherIds',
             foreignField: '_id',
             as: 'teacherDetails'
           }
@@ -253,7 +253,7 @@ class CoursesServices {
         {
           $lookup: {
             from: 'users',
-            localField: 'enrollmentId',
+            localField: 'enrollmentIds',
             foreignField: '_id',
             as: 'enrollmentDetails'
           }

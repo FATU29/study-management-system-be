@@ -5,26 +5,23 @@ import { ObjectId } from 'mongodb'
 import courseServices from '~/services/courses.services'
 import HTTP_STATUS from '~/constants/httpstatus'
 import { CourseRequest, GetCourseRequest } from '~/controllers/request/course.request'
+import databaseService from '~/services/database.services'
 
 export const addCourseController = async (req: Request<ParamsDictionary, any, ICourse>, res: Response) => {
   const _id = new ObjectId()
   const title = req.body.title
   const description = req.body.description
-  const teacherId = req.body.teacherId
-  const lessonId = req.body.lessonId
-  const rating = req.body.rating
+  const teacherIds = req.body.teacherIds
   const slug = req.slugOfCourse
-  const enrollmentId = req.body.enrollmentId
+  const enrollmentIds = req.body.enrollmentIds
 
   const objectCourse = new Course({
     _id,
     title,
     description,
-    teacherId,
-    lessonId,
-    rating,
+    teacherIds,
     slug,
-    enrollmentId
+    enrollmentIds
   })
 
   const result = await courseServices.createCourse(objectCourse)
@@ -73,8 +70,9 @@ export const updateCourseController = async (req: Request<ParamsDictionary, any,
   })
 }
 
-export const deleteCourseController = async (req: Request<ParamsDictionary, any, CourseRequest>, res: Response) => {
-  const _id = new ObjectId(req.course._id)
+export const deleteCourseController = async (req: Request<ParamsDictionary, any>, res: Response) => {
+  const _id = new ObjectId(req.body.courseId)
+  
   const result = await courseServices.deleteCourse(_id)
 
   res.json({
@@ -205,13 +203,15 @@ export const paginationCourseController = async (req: Request, res: Response) =>
 
 
   const data = await courseServices.paginatioCourseService(page,limit)
+  const length = await databaseService.courses.countDocuments()
+
 
   res.json({
     message: 'pagination course',
     status: HTTP_STATUS.OK,
     page: page,
     perPage: limit,
-    totalItems: data.length,
+    totalItems: length,
     data
   })
 }
