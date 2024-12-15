@@ -5,12 +5,12 @@ import RefreshToken from '~/models/schemas/refreshtoken.schema'
 import { Course } from '~/models/schemas/course.schema'
 import { RoleType } from '~/models/schemas/roleType.schema'
 import { Notification } from '~/models/schemas/notification.schema'
+import { CourseResource } from '~/models/schemas/course.resource.schema'
 dotenv.config()
 
 // Replace the uri string with your connection string.
 const uri = process.env.DATABASE_URI
 const dbName = process.env.DATABASE_NAME
-
 
 class DatabaseService {
   private client: MongoClient
@@ -18,13 +18,13 @@ class DatabaseService {
 
   constructor() {
     this.client = new MongoClient(uri as string)
-    this.database = this.client.db(dbName);
+    this.database = this.client.db(dbName)
   }
-  
+
   async connect() {
     try {
-      await this.client.connect();
-      await this.database.command({ ping: 1 });
+      await this.client.connect()
+      await this.database.command({ ping: 1 })
       console.log('Connected successfully to server')
     } catch (error) {
       console.error('Connection failed:', error)
@@ -32,29 +32,32 @@ class DatabaseService {
     }
   }
 
-  async disconnect(){
-    await this.client.close();
+  async disconnect() {
+    await this.client.close()
   }
 
-
-  get users():Collection<User>{
-    return this.database.collection('users');
+  get users(): Collection<User> {
+    return this.database.collection('users')
   }
 
   get refreshTokens(): Collection<RefreshToken> {
-    return this.database.collection("refresh_tokens")
+    return this.database.collection('refresh_tokens')
   }
 
-  get courses():Collection<Course> {
-    return this.database.collection("courses");
+  get courses(): Collection<Course> {
+    return this.database.collection('courses')
   }
 
-  get role():Collection<RoleType>{
-    return this.database.collection("roles");
+  get role(): Collection<RoleType> {
+    return this.database.collection('roles')
   }
 
-  get notifications():Collection<Notification>{
-    return this.database.collection("notifications");
+  get notifications(): Collection<Notification> {
+    return this.database.collection('notifications')
+  }
+
+  get courseResources(): Collection<CourseResource> {
+    return this.database.collection('course_resources')
   }
 }
 
