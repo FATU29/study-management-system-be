@@ -1,37 +1,14 @@
 import { ObjectId } from 'mongodb'
 
-export interface IFile {
-  _id?: ObjectId
-  filename: string
-  contentType: string
-  length: number
-  chunkSize: number // For GridFS
-  uploadDate: Date
-  uploaderId: ObjectId
-  sourceId: ObjectId // Maybe from CourseResource, UserAvatar, or User Storage
-}
-
-// Consider saving in a separate collection
-// Usually when access the resource, the submissions is not needed
-export interface ISubmission {
-  _id?: ObjectId
-  studentId: ObjectId
-  resourceId: ObjectId
-  submittedFiles: IFile[]
-  lastModifiedDate: Date
-  file: IFile
-  grade?: number
-}
-
 export interface IDocumentResourceInfo {
-  file: IFile
+  fileId: ObjectId
 }
 
 export class DocumentResourceInfo {
-  file: IFile
+  fileId: ObjectId
 
   constructor(documentResourceInfo: IDocumentResourceInfo) {
-    this.file = documentResourceInfo.file
+    this.fileId = documentResourceInfo.fileId
   }
 }
 
@@ -49,7 +26,7 @@ export class LinkResourceInfo {
 
 export interface IAssignmentResourceInfo {
   description?: string
-  attachments?: IFile[]
+  attachmentIds?: ObjectId[]
   openDate?: Date
   dueDate: Date
   // submissions: ISubmission[] // Store separately in a collection
@@ -57,14 +34,14 @@ export interface IAssignmentResourceInfo {
 
 export class AssignmentResourceInfo {
   description?: string
-  attachments?: IFile[]
+  attachmentIds?: ObjectId[]
   openDate?: Date
   dueDate: Date
   // submissions: ISubmission[]
 
   constructor(assignmentResourceInfo: IAssignmentResourceInfo) {
     this.description = assignmentResourceInfo.description
-    this.attachments = assignmentResourceInfo.attachments || []
+    this.attachmentIds = assignmentResourceInfo.attachmentIds || []
     this.openDate = assignmentResourceInfo.openDate || new Date()
     this.dueDate = assignmentResourceInfo.dueDate
     // this.submissions = assignmentResourceInfo.submissions

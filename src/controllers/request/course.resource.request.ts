@@ -16,12 +16,12 @@ export interface VerifiedCourseRecourseRequest<P = ParamsDictionary, ResBody = a
 export interface AddCourseResourceRequestBody {
   title: string
   resourceType: ResourceType
-  resourceInfo: any
+  resourceInfo: any // See ResourceInfo
   sectionLabel?: string
 }
 
 export interface UpdateCourseResourceRequestBody {
   title: string
-  resourceInfo: ResourceInfo
+  resourceInfo: any // See ResourceInfo
   sectionLabel?: string
 }
