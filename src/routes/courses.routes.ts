@@ -24,6 +24,8 @@ import {
   paginationCourseController,
 } from '~/controllers/courses.controllers'
 import { wrapRequestHandler } from '~/utils/handler'
+import { existingCourseValidation } from '~/middlewares/course.resources.middlewares'
+import resourceRouter from './course.resources.routes'
 
 const coursesRouter = express.Router()
 
@@ -48,6 +50,9 @@ coursesRouter.delete('/deleteSomeEnrollmentsInCourse',accessTokenValidation,cour
 
 coursesRouter.delete('/deleteCourse', accessTokenValidation, courseValidation, wrapRequestHandler(deleteCourseController))
 coursesRouter.get('/:slug', accessTokenValidation, getCourseValidation, wrapRequestHandler(getCourseController))
+
+coursesRouter.use('/:slug/res', accessTokenValidation, existingCourseValidation, wrapRequestHandler(resourceRouter))
+
 coursesRouter.patch(
   '/update',
   accessTokenValidation,
