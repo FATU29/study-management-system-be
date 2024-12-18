@@ -3,29 +3,16 @@ import { ObjectId } from 'mongodb'
 export interface IFile {
   _id?: ObjectId
   filename: string
-  contentType: string // MIME type
-  uploaderId: ObjectId // Teacher's _id in CourseResource, or User's _id in UserStorage
-  sourceId: ObjectId // Maybe from CourseResource(Resource's _id), or UserStorage (null)
-  length: number
-  data: Buffer
+  mimetype: string // MIME type
+  size: number
+  uploadDate: Date
 }
 
-export class File {
-  _id?: ObjectId
-  filename: string
-  contentType: string
-  uploaderId: ObjectId
-  sourceId: ObjectId
-  length: number
-  data: Buffer
+export const MAXIMUM_FILE_SIZE_ALLOWED = 1024 * 1024 * 5 // 5MB
+export const MAXIMUM_FILE_COUNT_ALLOWED = 5
 
-  constructor(file: IFile) {
-    this._id = file._id
-    this.filename = file.filename
-    this.contentType = file.contentType
-    this.uploaderId = file.uploaderId
-    this.sourceId = file.sourceId
-    this.length = file.length
-    this.data = file.data
-  }
+export interface FileMetadata {
+  uploaderId: ObjectId
+  sourceId?: ObjectId
+  mimetype: string
 }

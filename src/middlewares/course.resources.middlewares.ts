@@ -65,9 +65,9 @@ export const courseResourceValidation = validate(
           options: (value, { req }) => {
             switch (req.body.resourceType) {
               case 'document': {
-                if (!value.fileId) {
+                if (!value.file) {
                   throw new ErrorWithStatus({
-                    message: `'fileId' is required for resource type 'document'`,
+                    message: `'file' is required for resource type 'document'`,
                     status: HTTP_STATUS.UNPROCESSABLE_ENTITY
                   })
                 }

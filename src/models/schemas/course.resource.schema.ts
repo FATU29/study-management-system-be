@@ -1,14 +1,15 @@
 import { ObjectId } from 'mongodb'
+import { IFile } from './file.schema'
 
 export interface IDocumentResourceInfo {
-  fileId: ObjectId
+  file: IFile
 }
 
 export class DocumentResourceInfo {
-  fileId: ObjectId
+  file: IFile
 
   constructor(documentResourceInfo: IDocumentResourceInfo) {
-    this.fileId = documentResourceInfo.fileId
+    this.file = documentResourceInfo.file
   }
 }
 
@@ -26,7 +27,7 @@ export class LinkResourceInfo {
 
 export interface IAssignmentResourceInfo {
   description?: string
-  attachmentIds?: ObjectId[]
+  attachments?: IFile[]
   openDate?: Date
   dueDate: Date
   // submissions: ISubmission[] // Store separately in a collection
@@ -34,14 +35,14 @@ export interface IAssignmentResourceInfo {
 
 export class AssignmentResourceInfo {
   description?: string
-  attachmentIds?: ObjectId[]
+  attachments?: IFile[]
   openDate?: Date
   dueDate: Date
   // submissions: ISubmission[]
 
   constructor(assignmentResourceInfo: IAssignmentResourceInfo) {
     this.description = assignmentResourceInfo.description
-    this.attachmentIds = assignmentResourceInfo.attachmentIds || []
+    this.attachments = assignmentResourceInfo.attachments || []
     this.openDate = assignmentResourceInfo.openDate || new Date()
     this.dueDate = assignmentResourceInfo.dueDate
     // this.submissions = assignmentResourceInfo.submissions
