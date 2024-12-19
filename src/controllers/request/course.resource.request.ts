@@ -1,15 +1,16 @@
 import { Request } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ICourseResource, ResourceInfo, ResourceType } from '~/models/schemas/course.resource.schema'
+import { ICourse } from '~/models/schemas/course.schema'
 
 export interface VerifiedCourseRequest<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = any>
   extends Request<P, ResBody, ReqBody, ReqQuery> {
-  courseId: string
+  currentCourse: ICourse
 }
 
 export interface VerifiedCourseRecourseRequest<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = any>
   extends Request<P, ResBody, ReqBody, ReqQuery> {
-  courseId: string
+  currentCourse: ICourse
   previousResource: ICourseResource
 }
 
