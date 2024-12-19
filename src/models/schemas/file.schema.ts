@@ -13,6 +13,6 @@ export const MAXIMUM_FILE_COUNT_ALLOWED = 5
 
 export interface FileMetadata {
   uploaderId: ObjectId
-  sourceId?: ObjectId
+  sourceId?: string
   mimetype: string
 }

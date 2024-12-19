@@ -2,8 +2,13 @@ import express, { NextFunction, Request, RequestHandler, Response } from 'expres
 import _ from 'lodash'
 import multer from 'multer'
 import HTTP_STATUS from '~/constants/httpstatus'
-import { downloadFileController, uploadFilesController } from '~/controllers/files.controllers'
-import { downloadingFileValidation } from '~/middlewares/files.middlewares'
+import {
+  deleteFileController,
+  downloadFileController,
+  getPersonalFilesController,
+  uploadFilesController
+} from '~/controllers/files.controllers'
+import { fileIdentityValidation } from '~/middlewares/files.middlewares'
 import { accessTokenValidation } from '~/middlewares/users.middlewares'
 import { ErrorWithStatus } from '~/models/Errors'
 import { MAXIMUM_FILE_COUNT_ALLOWED, MAXIMUM_FILE_SIZE_ALLOWED } from '~/models/schemas/file.schema'
@@ -52,21 +57,20 @@ fileRouter.use(multerErrorHandler)
 // query: sourceId=...
 fileRouter.post('/upload', accessTokenValidation, multerParser.any(), simpleControlWrapper(uploadFilesController))
 
+fileRouter.get('/download', accessTokenValidation, fileIdentityValidation, simpleControlWrapper(downloadFileController))
+
 fileRouter.get(
-  '/download',
+  '/get-personal-files/:sourceId?',
   accessTokenValidation,
-  downloadingFileValidation,
-  simpleControlWrapper(downloadFileController)
+  simpleControlWrapper(getPersonalFilesController)
 )
 
-// TODO: Update file name
-fileRouter.patch('/update', accessTokenValidation, (req, res) => {
-  res.send('File updated')
-})
+// // Optional: update the file name
+// fileRouter.patch('/update', accessTokenValidation, (req, res) => {
+//   res.send('File updated')
+// })
 
 // only uploader can delete files
-fileRouter.delete('/delete', accessTokenValidation, (req, res) => {
-  res.send('File deleted')
-})
+fileRouter.delete('/delete', accessTokenValidation, fileIdentityValidation, simpleControlWrapper(deleteFileController))
 
 export default fileRouter

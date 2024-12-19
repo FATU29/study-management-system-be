@@ -1,10 +1,7 @@
 import { checkSchema } from 'express-validator'
-import { ObjectId } from 'mongodb'
 import validate from '~/utils/validate'
-import { ErrorWithStatus } from '~/models/Errors'
-import HTTP_STATUS from '~/constants/httpstatus'
 
-export const downloadingFileValidation = validate(
+export const fileIdentityValidation = validate(
   checkSchema(
     {
       sourceId: {

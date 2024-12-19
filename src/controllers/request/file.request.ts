@@ -1,18 +1,26 @@
 import { Request } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 
-export interface UploadFileRequestQuery {
+export interface UploadFilesRequestQuery {
   sourceId?: string
 }
 
-export interface UploadFileRequest<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = any>
+export interface UploadFilesRequest<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = any>
   extends Request<P, ResBody, ReqBody, ReqQuery> {
   files: Express.Multer.File[]
+}
+
+export interface GetFilesInfoRequestQuery {
+  sourceId?: string
 }
 
 export interface DownloadFileRequestBody {
   fileId: string
   sourceId?: string
+}
+
+export interface DeleteFileRequestBody {
+  fileId: string
 }
 
 // interface File {
