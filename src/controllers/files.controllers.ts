@@ -20,9 +20,9 @@ export const uploadFilesController = async (
 
   const files = req.files
   if (files.length === 0) {
-    throw new ErrorWithStatus({
-      status: HTTP_STATUS.BAD_REQUEST,
-      message: 'No files were able to be processed while uploading'
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
+      message: 'No files were uploaded',
+      status: HTTP_STATUS.BAD_REQUEST
     })
   }
 
