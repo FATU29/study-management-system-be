@@ -6,9 +6,9 @@ import {
   updateCourseResourceController
 } from '~/controllers/course.resources.controllers'
 import {
+  courseResourceAuthorizedEditorValidation,
   courseResourceValidation,
-  existingCourseResourceValidation,
-  existingResourceTypeValidation
+  existingCourseResourceValidation
 } from '~/middlewares/course.resources.middlewares'
 import { simpleControlWrapper } from '~/utils/handler'
 
@@ -22,14 +22,16 @@ resourceRouter.post('/add', courseResourceValidation, simpleControlWrapper(addCo
 
 resourceRouter.patch(
   '/update/:_id',
+  courseResourceAuthorizedEditorValidation as express.RequestHandler,
   existingCourseResourceValidation,
-  existingResourceTypeValidation,
+  // existingResourceTypeValidation, // resourceType should not be updated
   courseResourceValidation,
   simpleControlWrapper(updateCourseResourceController)
 )
 
 resourceRouter.delete(
   '/delete/:_id',
+  courseResourceAuthorizedEditorValidation as express.RequestHandler,
   existingCourseResourceValidation,
   simpleControlWrapper(deleteCourseResourceController)
 )

@@ -21,11 +21,10 @@ import {
   ResourceInfo,
   ResourceType
 } from '~/models/schemas/course.resource.schema'
-import { ObjectId } from 'mongodb'
 
 export const getAllCourseResourceController = async (req: VerifiedCourseRequest, res: Response) => {
   try {
-    const courseId = req.courseId
+    const courseId = req.currentCourse._id!!
     const result = await courseResourcesService.getCourseResources(courseId)
     res.json({
       message: 'Get Course Resources Successfully',
@@ -58,7 +57,7 @@ export const addCourseResourceController = async (
   res: Response
 ) => {
   try {
-    const courseId = ObjectId.createFromHexString(req.courseId)
+    const courseId = req.currentCourse._id!!
     const { title, resourceType, resourceInfo, sectionLabel } = req.body
     const resource = new CourseResource({
       title: title,
@@ -86,7 +85,7 @@ export const updateCourseResourceController = async (
   res: Response
 ) => {
   try {
-    const courseId = ObjectId.createFromHexString(req.courseId)
+    const courseId = req.currentCourse._id!!
     const previousResource = req.previousResource
     const { title, resourceInfo, sectionLabel } = req.body
     const resource = {

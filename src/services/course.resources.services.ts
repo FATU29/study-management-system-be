@@ -3,8 +3,8 @@ import databaseService from './database.services'
 import { ICourseResource } from '~/models/schemas/course.resource.schema'
 
 class CourseResourcesService {
-  async getCourseResources(courseId: string) {
-    const course = databaseService.courseResources.find({ courseId: ObjectId.createFromHexString(courseId) })
+  async getCourseResources(courseId: ObjectId) {
+    const course = databaseService.courseResources.find({ courseId: courseId })
     if (!course) {
       throw new Error(`Course with id "${courseId}" not exist`)
     }
