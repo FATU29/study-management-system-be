@@ -6,6 +6,7 @@ import { Course } from '~/models/schemas/course.schema'
 import { RoleType } from '~/models/schemas/roleType.schema'
 import { Notification } from '~/models/schemas/notification.schema'
 import { CourseResource } from '~/models/schemas/course.resource.schema'
+import { TMessage } from '~/models/schemas/message.schema'
 dotenv.config()
 
 // Replace the uri string with your connection string.
@@ -58,6 +59,10 @@ class DatabaseService {
 
   get courseResources(): Collection<CourseResource> {
     return this.database.collection('course_resources')
+  }
+
+  get messages(): Collection<TMessage> {
+    return this.database.collection('messages')
   }
 }
 

@@ -195,15 +195,12 @@ export const accessTokenValidation = validate(
       Authorization: {
         custom: {
           options: async (value, { req }) => {
-
-            
             if (value === '') {
               throw new ErrorWithStatus({
                 message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
                 status: HTTP_STATUS.UNPROCESSABLE_ENTITY
               })
             }
-
             const access = value.split(' ')
             if (access[0] !== 'Bearer') {
               throw new ErrorWithStatus({
