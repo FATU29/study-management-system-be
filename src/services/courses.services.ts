@@ -34,6 +34,57 @@ class CoursesServices {
     return await databaseService.courses.deleteOne({ _id: _id })
   }
 
+  async getCourseForStudentService(enrollmentId: string) {
+    const courses = await databaseService.courses.aggregate([
+      {
+        $match: {
+          enrollmentIds: enrollmentId
+        }
+      },
+      {
+        $addFields: {
+          teacherObjectIds: {
+            $map: {
+              input: '$teacherIds',
+              as: 'id',
+              in: { $toObjectId: '$$id' }  // Convert string IDs to ObjectId
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'teacherObjectIds',
+          foreignField: '_id',
+          as: 'teacherDetails'
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          teacherIds: 1,
+          teacherDetails: {
+            $map: {
+              input: '$teacherDetails',
+              as: 'teacher',
+              in: {
+                _id: '$$teacher._id',
+                firstName: '$$teacher.firstName',
+                lastName: '$$teacher.lastName',
+                email: '$$teacher.email',
+                role: '$$teacher.role'
+              }
+            }
+          }
+        }
+      }
+    ]).toArray();
+  
+    return courses;
+  }
+    
   async getCourseForAdminService() {
     const data = await databaseService.courses
       .aggregate([

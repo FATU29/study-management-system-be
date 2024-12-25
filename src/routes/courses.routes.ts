@@ -22,6 +22,7 @@ import {
   addSomeEnrollmentsInCoureseController,
   addSomeTeachersInCoureseController,
   paginationCourseController,
+  getCourseForStudentController
 } from '~/controllers/courses.controllers'
 import { wrapRequestHandler } from '~/utils/handler'
 
@@ -30,6 +31,7 @@ const coursesRouter = express.Router()
 
 coursesRouter.get('/',accessTokenValidation,forAdminValidation,wrapRequestHandler(paginationCourseController))
 coursesRouter.post('/add', accessTokenValidation, addCourseValidation, wrapRequestHandler(addCourseController))
+coursesRouter.get('/getCourseForStudent', accessTokenValidation, wrapRequestHandler(getCourseForStudentController))
 coursesRouter.get('/getCourseForAdmin', accessTokenValidation,wrapRequestHandler(getCourseForAdminController))
 
 
