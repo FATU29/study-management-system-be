@@ -1,4 +1,4 @@
-import { Collection, Db, MongoClient } from 'mongodb'
+import { Collection, Db, GridFSBucket, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
 import User from '~/models/schemas/user.schema'
 import RefreshToken from '~/models/schemas/refreshtoken.schema'
@@ -6,6 +6,7 @@ import { Course } from '~/models/schemas/course.schema'
 import { RoleType } from '~/models/schemas/roleType.schema'
 import { Notification } from '~/models/schemas/notification.schema'
 import { CourseResource } from '~/models/schemas/course.resource.schema'
+import { Submission } from '~/models/schemas/submission.schema'
 dotenv.config()
 
 // Replace the uri string with your connection string.
@@ -16,9 +17,15 @@ class DatabaseService {
   private client: MongoClient
   private database: Db
 
+  private gridFSBucket: GridFSBucket
+
   constructor() {
     this.client = new MongoClient(uri as string)
     this.database = this.client.db(dbName)
+
+    this.gridFSBucket = new GridFSBucket(this.database, {
+      bucketName: 'fs'
+    })
   }
 
   async connect() {
@@ -58,6 +65,14 @@ class DatabaseService {
 
   get courseResources(): Collection<CourseResource> {
     return this.database.collection('course_resources')
+  }
+
+  get submissions(): Collection<Submission> {
+    return this.database.collection('submissions')
+  }
+
+  get bucket(): GridFSBucket {
+    return this.gridFSBucket
   }
 }
 

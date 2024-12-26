@@ -1,27 +1,5 @@
 import { ObjectId } from 'mongodb'
-
-export interface IFile {
-  _id?: ObjectId
-  filename: string
-  contentType: string
-  length: number
-  chunkSize: number // For GridFS
-  uploadDate: Date
-  uploaderId: ObjectId
-  sourceId: ObjectId // Maybe from CourseResource, UserAvatar, or User Storage
-}
-
-// Consider saving in a separate collection
-// Usually when access the resource, the submissions is not needed
-export interface ISubmission {
-  _id?: ObjectId
-  studentId: ObjectId
-  resourceId: ObjectId
-  submittedFiles: IFile[]
-  lastModifiedDate: Date
-  file: IFile
-  grade?: number
-}
+import { IFile } from './file.schema'
 
 export interface IDocumentResourceInfo {
   file: IFile
