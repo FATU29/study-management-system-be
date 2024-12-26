@@ -82,6 +82,18 @@ export const deleteCourseController = async (req: Request<ParamsDictionary, any>
   })
 }
 
+export const getCourseForStudentController = async (req: Request, res: Response) => {
+  const { enrollmentId } = req.params
+  console.log(enrollmentId)
+  const courses = await courseServices.getCourseForStudentService(enrollmentId as string)
+
+  res.json({
+    message: 'Get Course for student',
+    status: HTTP_STATUS.OK,
+    courses
+  })
+}
+
 export const getCourseForAdminController = async (req: Request, res: Response) => {
   const data = await courseServices.getCourseForAdminService()
 
