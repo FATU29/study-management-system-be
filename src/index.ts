@@ -13,6 +13,8 @@ import cors from 'cors'
 import refreshTokenRouter from '~/routes/refreshToken.routes'
 import searchRouter from './routes/search.routes'
 import { initSocket } from './utils/socket'
+import fileRouter from './routes/files.routes'
+import messageRouter from './routes/messages.routes'
 dotenv.config()
 
 const port = process.env.PORT
@@ -31,11 +33,14 @@ app.use(
 
 app.use('/api/users', usersRouter)
 app.use('/api/courses', coursesRouter)
+app.use('/api/files', fileRouter)
 app.use('/api/role', roleRouter)
 app.use('/api/notifications', notificationsRouter)
 app.use('/api/search', searchRouter)
-app.use(defaultErrorHandler)
 app.use('/api/refresh-token', refreshTokenRouter)
+app.use('/api/message',messageRouter)
+app.use(defaultErrorHandler)
+
 
 
 const server = createServer(app)
