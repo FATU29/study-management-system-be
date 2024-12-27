@@ -64,6 +64,8 @@ class CoursesServices {
           _id: 1,
           title: 1,
           teacherIds: 1,
+          rating:1,
+          slug: 1,
           teacherDetails: {
             $map: {
               input: '$teacherDetails',
