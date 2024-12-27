@@ -17,6 +17,9 @@ import {
   IAssignmentResourceInfo,
   IDocumentResourceInfo,
   ILinkResourceInfo,
+  IVideo,
+  IDocument,
+  IExercise,
   LinkResourceInfo,
   ResourceInfo,
   ResourceType
@@ -39,18 +42,6 @@ export const getAllCourseResourceController = async (req: VerifiedCourseRequest,
   }
 }
 
-const stardardizeResourceInfo = (resourceType: ResourceType, resourceInfo: ResourceInfo): ResourceInfo => {
-  switch (resourceType) {
-    case 'document':
-      return new DocumentResourceInfo(resourceInfo as IDocumentResourceInfo)
-    case 'link':
-      return new LinkResourceInfo(resourceInfo as ILinkResourceInfo)
-    case 'assignment':
-      return new AssignmentResourceInfo(resourceInfo as IAssignmentResourceInfo)
-    case 'announcement':
-      return new AnnouncementResourceInfo(resourceInfo as IAnnouncementResourceInfo)
-  }
-}
 
 export const addCourseResourceController = async (
   req: VerifiedCourseRequest<ParamsDictionary, any, AddCourseResourceRequestBody>,
@@ -58,12 +49,15 @@ export const addCourseResourceController = async (
 ) => {
   try {
     const courseId = req.currentCourse._id!!
-    const { title, resourceType, resourceInfo, sectionLabel } = req.body
+    const { title, videos, documents, exercises, sectionLabel } = req.body
+    const maxOrder = await courseResourcesService.getMaxOrder(courseId)
     const resource = new CourseResource({
       title: title,
       courseId: courseId,
-      resourceType: resourceType,
-      resourceInfo: stardardizeResourceInfo(resourceType, resourceInfo),
+      videos: videos,
+      documents: documents,
+      exercises: exercises,
+      order: maxOrder + 1,
       sectionLabel: sectionLabel
     })
     const result = await courseResourcesService.addCourceResources(resource)
@@ -87,13 +81,15 @@ export const updateCourseResourceController = async (
   try {
     const courseId = req.currentCourse._id!!
     const previousResource = req.previousResource
-    const { title, resourceInfo, sectionLabel } = req.body
+    const { title, videos, documents, exercises, sectionLabel } = req.body
     const resource = {
       _id: previousResource._id,
       title: title,
       courseId: courseId,
-      resourceType: previousResource.resourceType,
-      resourceInfo: stardardizeResourceInfo(previousResource.resourceType, resourceInfo),
+      videos: videos,
+      documents: documents,
+      exercises: exercises,
+      order: previousResource.order,
       sectionLabel: sectionLabel
     }
     const result = await courseResourcesService.updateCourseResource(resource)
