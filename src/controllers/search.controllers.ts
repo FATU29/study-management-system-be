@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpstatus'
 import searchService from '~/services/search.services'
@@ -88,4 +88,20 @@ export const searchCoursesController = async (req: Request, res: Response) => {
     data:  data.rows
   })
 
+}
+
+
+export const searchAllUserController = async (req:Request, res:Response,next:NextFunction) => {
+  try {
+    const content = req.body.query.content;
+    const users = await searchService.getAllUserService(content);
+
+    res.json({
+      message:"Get all userService sucessfully",
+      code:HTTP_STATUS.OK,
+      data: users
+    })
+  } catch (error) {
+    next(error)
+  }
 }
