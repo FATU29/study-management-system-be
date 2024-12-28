@@ -7,19 +7,20 @@ import messageService from '~/services/message.services'
 export const getMessagesController = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.decoded_authorization
-    const { receiverId } = req.body || ''
-    const { page = 1, perPage = 6 } = req.query
-
-    const response = await messageService.getMessages(user_id, new ObjectId(receiverId), Number(page), Number(perPage))
+    const { page = 1, perPage = 6, receiverId } = req.query
+    const toObjectIdReceiver =  new ObjectId(receiverId as string)
+    const toObjectIdUser = new ObjectId(user_id)
+    
+    const response = await messageService.getMessages(toObjectIdUser, String(receiverId), Number(page), Number(perPage))
     const totalPage = await databaseService.messages.countDocuments({
       $or: [
         {
-          senderId: user_id,
-          receiverId: new ObjectId(receiverId)
+          senderId: toObjectIdUser,
+          receiverId: toObjectIdReceiver
         },
         {
-          senderId: new ObjectId(receiverId),
-          receiverId: user_id
+          senderId: toObjectIdReceiver,
+          receiverId: toObjectIdUser
         }
       ]
     })
@@ -42,7 +43,8 @@ export const getMessagesController = async (req: Request, res: Response) => {
 export const getReceiverController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { user_id } = req.decoded_authorization
-    const arrayUser = await messageService.getReceiverDetail(user_id)
+    const {content} = req.query
+    const arrayUser = await messageService.getReceiverDetail(new ObjectId(user_id),content as string)
 
     res.json({
       message: 'getReciverId successfully',

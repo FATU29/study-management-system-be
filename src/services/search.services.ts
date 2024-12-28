@@ -215,7 +215,7 @@ class SearchService {
 
   async searchCourse(content: string, page: number, perPage: number) {
     if (!content || typeof content !== 'string' || content.trim() === '') {
-      return { rows: [], length: 0 };
+      return { rows: [], length: 0 }
     }
 
     try {
@@ -226,9 +226,7 @@ class SearchService {
         .aggregate([
           {
             $match: {
-              $or: [
-                { title: { $regex: content, $options: 'i' } },
-              ]
+              $or: [{ title: { $regex: content, $options: 'i' } }]
             }
           },
           { $skip: skip },
@@ -236,22 +234,20 @@ class SearchService {
         ])
         .toArray()
 
-        const lengthArray = await databaseService.courses
+      const lengthArray = await databaseService.courses
         .aggregate([
           {
             $match: {
-              $or: [
-                { title: { $regex: content, $options: 'i' } },
-              ]
+              $or: [{ title: { $regex: content, $options: 'i' } }]
             }
           },
           {
-            $count: "totalCount"
+            $count: 'totalCount'
           }
-        ]).toArray();
-      
-      const totalCount = lengthArray.length > 0 ? lengthArray[0].totalCount : 0;
-      
+        ])
+        .toArray()
+
+      const totalCount = lengthArray.length > 0 ? lengthArray[0].totalCount : 0
 
       return {
         rows: data,
@@ -260,6 +256,39 @@ class SearchService {
     } catch (error) {
       console.error('Error in searchCourse:', error)
       throw new Error('Failed to fetch search results')
+    }
+  }
+
+  async getAllUserService(content: string) {
+    try {
+      const data = await databaseService.users
+        .find({
+          $or: [
+            {
+              firstName: {
+                $regex: content,
+                $options: 'i'
+              }
+            },
+            {
+              lastName: {
+                $regex: content,
+                $options: 'i'
+              }
+            },
+            {
+              email: {
+                $regex: content,
+                $options: 'i'
+              }
+            }
+          ]
+        })
+        .project({ password: 0 })
+        .toArray()
+      return data
+    } catch (error) {
+      throw new Error('Fail to get All users')
     }
   }
 }
