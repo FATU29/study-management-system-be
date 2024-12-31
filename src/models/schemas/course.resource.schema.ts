@@ -49,6 +49,24 @@ export class AssignmentResourceInfo {
   }
 }
 
+export interface IAnnouncementResourceInfo {
+  content: string
+}
+
+export class AnnouncementResourceInfo {
+  content: string
+
+  constructor(announcementResourceInfo: IAnnouncementResourceInfo) {
+    this.content = announcementResourceInfo.content
+  }
+}
+
+export type ResourceType = 'document' | 'link' | 'assignment' | 'announcement'
+export type ResourceInfo =
+  | IDocumentResourceInfo
+  | ILinkResourceInfo
+  | IAssignmentResourceInfo
+  | IAnnouncementResourceInfo
 
 export interface ICourseResource {
   _id?: ObjectId

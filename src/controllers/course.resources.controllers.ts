@@ -9,10 +9,20 @@ import { Response } from 'express'
 import HTTP_STATUS from '~/constants/httpstatus'
 import courseResourcesService from '~/services/course.resources.services'
 import {
+  AnnouncementResourceInfo,
+  AssignmentResourceInfo,
   CourseResource,
+  DocumentResourceInfo,
+  IAnnouncementResourceInfo,
+  IAssignmentResourceInfo,
+  IDocumentResourceInfo,
+  ILinkResourceInfo,
+  IVideo,
   IDocument,
   IExercise,
-  IVideo
+  LinkResourceInfo,
+  ResourceInfo,
+  ResourceType
 } from '~/models/schemas/course.resource.schema'
 
 export const getAllCourseResourceController = async (req: VerifiedCourseRequest, res: Response) => {
@@ -41,7 +51,6 @@ export const addCourseResourceController = async (
     const courseId = req.currentCourse._id!!
     const { title, videos, documents, exercises, sectionLabel } = req.body
     const maxOrder = await courseResourcesService.getMaxOrder(courseId)
-    
     const resource = new CourseResource({
       title: title,
       courseId: courseId,

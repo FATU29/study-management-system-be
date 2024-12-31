@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpstatus'
 import { VerifiedCourseRequest } from '~/controllers/request/course.resource.request'
 import { ErrorWithStatus } from '~/models/Errors'
+import { ICourseResource, ResourceInfo, ResourceType } from '~/models/schemas/course.resource.schema'
 import { Course } from '~/models/schemas/course.schema'
 import databaseService from '~/services/database.services'
 import validate from '~/utils/validate'
@@ -27,6 +28,10 @@ export const existingCourseValidation = validate(
               }
 
               req.currentCourse = course
+              // throw new ErrorWithStatus({
+              //   message: `Course params '${JSON.stringify(req.params)}'`,
+              //   status: HTTP_STATUS.OK
+              // })
             } catch (error: any) {
               throw error
             }
