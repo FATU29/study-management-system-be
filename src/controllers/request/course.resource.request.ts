@@ -16,16 +16,13 @@ export interface VerifiedCourseRecourseRequest<P = ParamsDictionary, ResBody = a
 
 export interface AddCourseResourceRequestBody {
   title: string
-  videos: any[]
-  documents: any[]
-  exercises: any[]
+  resourceType: ResourceType
+  resourceInfo: any // See ResourceInfo
   sectionLabel?: string
 }
 
 export interface UpdateCourseResourceRequestBody {
   title: string
-  videos: any[]
-  documents: any[]
-  exercises: any[]
+  resourceInfo: any // See ResourceInfo
   sectionLabel?: string
 }

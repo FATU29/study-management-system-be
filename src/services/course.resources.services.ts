@@ -45,19 +45,6 @@ class CourseResourcesService {
     await databaseService.courseResources.deleteOne({ _id: ObjectId.createFromHexString(resourceId) })
     return resource
   }
-
-  async findOrderedResources(courseId: ObjectId) {
-    return await databaseService.courseResources.find({ courseId: courseId }).sort({ order: 1 }).toArray()
-  }
-
-  async getMaxOrder(courseId: ObjectId) {
-    const maxOrder = await databaseService.courseResources
-      .find({ courseId: courseId })
-      .sort({ order: -1 })
-      .limit(1)
-      .toArray()
-    return maxOrder.length > 0 ? maxOrder[0].order : 0
-  }
 }
 
 const courseResourcesService = new CourseResourcesService()

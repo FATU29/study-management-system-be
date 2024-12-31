@@ -72,38 +72,19 @@ export interface ICourseResource {
   _id?: ObjectId
   title: string
   courseId: ObjectId
-  videos?: IVideo[];
-  documents?: IDocument[];
-  exercises?: IExercise[];
+  resourceType: ResourceType
+  resourceInfo: ResourceInfo
   sectionLabel?: string
-  order: number
   createdAt?: Date
   updatedAt?: Date
-}
-
-export interface IVideo{
-  title: string;
-  url: string;
-}
-
-export interface IDocument {
-  title: string;
-  file: IFile;
-}
-
-export interface IExercise {
-  title: string;
-  file: IFile;
 }
 
 export class CourseResource {
   _id?: ObjectId
   title: string
   courseId: ObjectId
-  videos?: IVideo[];
-  documents?: IDocument[];
-  exercises?: IExercise[];
-  order: number
+  resourceType: ResourceType
+  resourceInfo: ResourceInfo
   sectionLabel?: string
   createdAt?: Date
   updatedAt?: Date
@@ -112,11 +93,9 @@ export class CourseResource {
     this._id = courseResource._id
     this.title = courseResource.title
     this.courseId = courseResource.courseId
-    this.videos = courseResource.videos;
-    this.documents = courseResource.documents;
-    this.exercises = courseResource.exercises;
+    this.resourceType = courseResource.resourceType
+    this.resourceInfo = courseResource.resourceInfo
     this.sectionLabel = courseResource.sectionLabel
-    this.order = courseResource.order
     this.createdAt = courseResource.createdAt
     this.updatedAt = courseResource.updatedAt
   }

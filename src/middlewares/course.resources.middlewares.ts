@@ -51,10 +51,80 @@ export const courseResourceValidation = validate(
         trim: true,
         notEmpty: true
       },
-      sectionLabel: {
-        optional: true,
+      resourceType: {
         isString: true,
-        trim: true
+        trim: true,
+        notEmpty: true,
+        custom: {
+          options: (value) => {
+            if (!['document', 'link', 'assignment', 'announcement'].includes(value)) {
+              throw new ErrorWithStatus({
+                message: `Invalid resource type '${value}'`,
+                status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+              })
+            }
+            return true
+          }
+        }
+      },
+      resourceInfo: {
+        custom: {
+          options: (value, { req }) => {
+            switch (req.body.resourceType) {
+              case 'document': {
+                if (!value.file) {
+                  throw new ErrorWithStatus({
+                    message: `'file' is required for resource type 'document'`,
+                    status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                  })
+                }
+                break
+              }
+              case 'link': {
+                if (!value.url) {
+                  throw new ErrorWithStatus({
+                    message: `'url' is required for resource type 'link'`,
+                    status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                  })
+                }
+                break
+              }
+              case 'assignment': {
+                if (!value.dueDate) {
+                  throw new ErrorWithStatus({
+                    message: `'dueDate' is required for resource type 'assignment'`,
+                    status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                  })
+                }
+                const openDate = new Date(value.openDate ?? new Date())
+                const dueDate = new Date(value.dueDate)
+                if (isNaN(openDate.getTime()) || isNaN(dueDate.getTime())) {
+                  throw new ErrorWithStatus({
+                    message: `'openDate' and/or 'dueDate' are invalid date format`,
+                    status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                  })
+                }
+                if (dueDate <= openDate) {
+                  throw new ErrorWithStatus({
+                    message: `'dueDate' should be greater than 'openDate' (if not provided, current date)`,
+                    status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                  })
+                }
+                break
+              }
+              case 'announcement': {
+                if (!value.content) {
+                  throw new ErrorWithStatus({
+                    message: `'content' is required for resource type 'announcement'`,
+                    status: HTTP_STATUS.UNPROCESSABLE_ENTITY
+                  })
+                }
+                break
+              }
+            }
+            return true
+          }
+        }
       }
     },
     ['body']
@@ -89,6 +159,7 @@ export const existingCourseResourceValidation = validate(
               }
 
               req.previousResource = resource
+              req.body.resourceType = resource.resourceType as ResourceType
             } catch (error: any) {
               throw error
             }
