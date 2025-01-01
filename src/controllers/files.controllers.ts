@@ -7,7 +7,8 @@ import {
   UploadFilesRequestQuery,
   UploadFilesRequest,
   DeleteFileRequestBody,
-  GetFilesInfoRequestQuery
+  GetFilesInfoRequestQuery,
+  DownloadFileRequestQuery
 } from './request/file.request'
 import fileService from '~/services/file.services'
 
@@ -68,17 +69,19 @@ export const getPersonalFilesController = async (
 }
 
 export const downloadFileController = async (
-  req: Request<ParamsDictionary, any, DownloadFileRequestBody>,
+  req: Request<ParamsDictionary, any, any, DownloadFileRequestQuery>,
   res: Response
 ) => {
   const userId = req.decoded_authorization.user_id.toString()
-  const sourceId = req.body.sourceId
-  const fileId = req.body.fileId
+  const sourceId = req.query.sourceId
+  const fileId = req.query.fileId
+  const inlineView = req.query.inline || false
 
   try {
     const { fileInfo, downloadStream } = await fileService.downloadFile(fileId, userId, sourceId)
 
     res.setHeader('Content-Type', fileInfo.mimetype)
+    res.setHeader('Content-Disposition', `${inlineView ? 'inline' : 'attachment'}; filename="${fileInfo.filename}"`)
     res.setHeader('Content-Disposition', `attachment; filename="${fileInfo.filename}"`)
     res.setHeader('Content-Length', fileInfo.size.toString())
 

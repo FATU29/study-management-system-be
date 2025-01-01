@@ -24,8 +24,43 @@ export const fileIdentityValidation = validate(
         //     }
         //   }
         // }
+      },
+      mode: {
+        in: ['params'],
+        optional: true,
+        trim: true,
+        notEmpty: true,
+        isString: true,
+        isIn: {
+          options: [['attachment', 'inline']]
+        }
       }
     },
     ['body']
+  )
+)
+
+export const fileQueryValidation = validate(
+  checkSchema(
+    {
+      fileId: {
+        isString: true,
+        trim: true,
+        notEmpty: true
+      },
+      sourceId: {
+        optional: true,
+        trim: true,
+        notEmpty: true,
+        isString: true
+      },
+      inline: {
+        optional: true,
+        trim: true,
+        notEmpty: true,
+        isBoolean: true
+      }
+    },
+    ['query']
   )
 )

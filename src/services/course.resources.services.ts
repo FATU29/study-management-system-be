@@ -4,7 +4,7 @@ import { ICourseResource } from '~/models/schemas/course.resource.schema'
 
 class CourseResourcesService {
   async getCourseResources(courseId: ObjectId) {
-    const course = databaseService.courseResources.find({ courseId: courseId })
+    const course = databaseService.courseResources.find({ courseId: courseId }).sort({ createdAt: 1 })
     if (!course) {
       throw new Error(`Course with id "${courseId}" not exist`)
     }
