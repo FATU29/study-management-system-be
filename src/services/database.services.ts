@@ -1,4 +1,4 @@
-import { Collection, Db, GridFSBucket, MongoClient } from 'mongodb'
+import { Collection, Db, GridFSBucket, GridFSFile, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
 import User from '~/models/schemas/user.schema'
 import RefreshToken from '~/models/schemas/refreshtoken.schema'
@@ -13,6 +13,8 @@ dotenv.config()
 const uri = process.env.DATABASE_URI
 const dbName = process.env.DATABASE_NAME
 
+const bucketName = 'fs'
+
 class DatabaseService {
   private client: MongoClient
   private database: Db
@@ -24,7 +26,7 @@ class DatabaseService {
     this.database = this.client.db(dbName)
 
     this.gridFSBucket = new GridFSBucket(this.database, {
-      bucketName: 'fs'
+      bucketName: bucketName
     })
   }
 
@@ -73,6 +75,10 @@ class DatabaseService {
 
   get bucket(): GridFSBucket {
     return this.gridFSBucket
+  }
+
+  get files(): Collection<GridFSFile> {
+    return this.database.collection(`${bucketName}.files`)
   }
 }
 

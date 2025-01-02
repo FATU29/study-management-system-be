@@ -5,6 +5,7 @@ import HTTP_STATUS from '~/constants/httpstatus'
 import { ErrorWithStatus } from '~/models/Errors'
 
 const bucket = databaseService.bucket
+const fsFiles = databaseService.files
 
 class FileService {
   async uploadFile(file: Express.Multer.File, uploaderId: string, sourceId?: string) {
@@ -63,6 +64,34 @@ class FileService {
       }
       return fileInfo
     })
+  }
+
+  async updateFileMetadata(fileId: string, metadata: Partial<FileMetadata>) {
+    const file = await bucket
+      .find({
+        _id: new ObjectId(fileId)
+      })
+      .limit(1)
+      .next()
+
+    if (!file) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: `File with id "${fileId}" does not exist`
+      })
+    }
+
+    await fsFiles.updateOne(
+      { _id: new ObjectId(fileId) },
+      {
+        $set: {
+          metadata: {
+            ...file.metadata,
+            ...metadata
+          }
+        }
+      }
+    )
   }
 
   async downloadFile(fileId: string, requesterId: string, sourceId?: string) {
