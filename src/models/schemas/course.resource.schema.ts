@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { IFile } from './file.schema'
+import { IFile, MAXIMUM_FILE_SIZE_ALLOWED } from './file.schema'
 
 export interface IDocumentResourceInfo {
   file: IFile
@@ -30,6 +30,8 @@ export interface IAssignmentResourceInfo {
   attachments?: IFile[]
   openDate?: Date
   dueDate: Date
+  maxFileSize?: number
+  maxFileCount?: number
   // submissions: ISubmission[] // Store separately in a collection
 }
 
@@ -38,6 +40,8 @@ export class AssignmentResourceInfo {
   attachments?: IFile[]
   openDate?: Date
   dueDate: Date
+  maxFileSize?: number
+  maxFileCount?: number
   // submissions: ISubmission[]
 
   constructor(assignmentResourceInfo: IAssignmentResourceInfo) {
@@ -46,6 +50,8 @@ export class AssignmentResourceInfo {
     this.openDate = assignmentResourceInfo.openDate || new Date()
     this.dueDate = assignmentResourceInfo.dueDate
     // this.submissions = assignmentResourceInfo.submissions
+    this.maxFileSize = assignmentResourceInfo.maxFileSize || MAXIMUM_FILE_SIZE_ALLOWED
+    this.maxFileCount = assignmentResourceInfo.maxFileCount || 1
   }
 }
 

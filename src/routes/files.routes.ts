@@ -86,6 +86,6 @@ fileRouter.get(
 // })
 
 // only uploader can delete files
-fileRouter.delete('/delete', accessTokenValidation, fileIdentityValidation, simpleControlWrapper(deleteFileController))
+fileRouter.delete('/delete', accessTokenValidation, fileQueryValidation, simpleControlWrapper(deleteFileController))
 
 export default fileRouter

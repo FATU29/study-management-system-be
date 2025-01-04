@@ -1,6 +1,7 @@
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
   AddCourseResourceRequestBody,
+  GetSubmissionsRequestQuery,
   UpdateCourseResourceRequestBody,
   VerifiedCourseRecourseRequest,
   VerifiedCourseRequest
@@ -23,7 +24,7 @@ import {
 } from '~/models/schemas/course.resource.schema'
 import fileService from '~/services/file.services'
 import { ObjectId } from 'mongodb'
-import { FileMetadata } from '~/models/schemas/file.schema'
+import { FileMetadata, IFile } from '~/models/schemas/file.schema'
 import { at } from 'lodash'
 
 export const getAllCourseResourceController = async (req: VerifiedCourseRequest, res: Response) => {
@@ -35,6 +36,41 @@ export const getAllCourseResourceController = async (req: VerifiedCourseRequest,
       status: HTTP_STATUS.OK,
       data: result
     })
+  } catch (error: any) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
+      message: error.message,
+      status: HTTP_STATUS.BAD_REQUEST
+    })
+  }
+}
+
+export const getSubmissionsController = async (
+  req: VerifiedCourseRecourseRequest<ParamsDictionary, any, any, GetSubmissionsRequestQuery>,
+  res: Response
+) => {
+  try {
+    const resourceId = req.previousResource._id!!
+    const uploaderId = req.query.uploaderId
+    if (uploaderId) {
+      const result = await courseResourcesService.getSubmissions(resourceId.toHexString(), uploaderId)
+      res.json({
+        message: 'Get Submissions Successfully',
+        status: HTTP_STATUS.OK,
+        data: result
+      })
+    } else {
+      const studentIds = req.currentCourse.enrollmentIds
+      const submissions: IFile[] = []
+      studentIds.forEach((id) => async () => {
+        const result = await courseResourcesService.getSubmissions(resourceId.toHexString(), id)
+        submissions.push(...result)
+      })
+      res.json({
+        message: 'Get Submissions Successfully',
+        status: HTTP_STATUS.OK,
+        data: submissions
+      })
+    }
   } catch (error: any) {
     res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message,

@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
 import { ICourseResource } from '~/models/schemas/course.resource.schema'
+import fileService from './file.services'
 
 class CourseResourcesService {
   async getCourseResources(courseId: ObjectId) {
@@ -10,6 +11,10 @@ class CourseResourcesService {
     }
     const courseResources = await course.toArray()
     return courseResources
+  }
+
+  async getSubmissions(resourceId: string, uploaderId: string) {
+    return await fileService.getFilesInfo(uploaderId, resourceId)
   }
 
   async addCourceResources(resource: ICourseResource) {

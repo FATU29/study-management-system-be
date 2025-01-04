@@ -25,7 +25,11 @@ export interface DownloadFileRequestQuery {
   inline?: boolean
 }
 
-export interface DeleteFileRequestBody {
+// export interface DeleteFileRequestBody {
+//   fileId: string
+// }
+
+export interface DeleteFileRequestQuery {
   fileId: string
 }
 

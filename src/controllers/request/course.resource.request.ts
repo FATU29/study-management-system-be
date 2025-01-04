@@ -14,6 +14,10 @@ export interface VerifiedCourseRecourseRequest<P = ParamsDictionary, ResBody = a
   previousResource: ICourseResource
 }
 
+export interface GetSubmissionsRequestQuery {
+  uploaderId?: string
+}
+
 export interface AddCourseResourceRequestBody {
   title: string
   resourceType: ResourceType

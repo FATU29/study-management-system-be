@@ -3,12 +3,11 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import HTTP_STATUS from '~/constants/httpstatus'
 import { ErrorWithStatus } from '~/models/Errors'
 import {
-  DownloadFileRequestBody,
   UploadFilesRequestQuery,
   UploadFilesRequest,
-  DeleteFileRequestBody,
   GetFilesInfoRequestQuery,
-  DownloadFileRequestQuery
+  DownloadFileRequestQuery,
+  DeleteFileRequestQuery
 } from './request/file.request'
 import fileService from '~/services/file.services'
 
@@ -102,11 +101,11 @@ export const downloadFileController = async (
 }
 
 export const deleteFileController = async (
-  req: Request<ParamsDictionary, any, DeleteFileRequestBody>,
+  req: Request<ParamsDictionary, any, any, DeleteFileRequestQuery>,
   res: Response
 ) => {
   const userId = req.decoded_authorization.user_id.toString()
-  const fileId = req.body.fileId
+  const fileId = req.query.fileId
 
   try {
     const deletedFileInfo = await fileService.deleteFile(fileId, userId)

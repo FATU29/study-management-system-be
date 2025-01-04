@@ -3,6 +3,7 @@ import {
   addCourseResourceController,
   deleteCourseResourceController,
   getAllCourseResourceController,
+  getSubmissionsController,
   updateCourseResourceController
 } from '~/controllers/course.resources.controllers'
 import {
@@ -18,11 +19,22 @@ const resourceRouter = express.Router({ mergeParams: true })
 
 resourceRouter.get('/', simpleControlWrapper(getAllCourseResourceController))
 
-resourceRouter.post('/add', courseResourceValidation, simpleControlWrapper(addCourseResourceController))
+resourceRouter.get(
+  '/submissions/:_id',
+  existingCourseResourceValidation,
+  simpleControlWrapper(getSubmissionsController)
+)
+
+resourceRouter.post(
+  '/add',
+  // courseResourceAuthorizedEditorValidation as express.RequestHandler, // TODO: Uncomment this line
+  courseResourceValidation,
+  simpleControlWrapper(addCourseResourceController)
+)
 
 resourceRouter.patch(
   '/update/:_id',
-  courseResourceAuthorizedEditorValidation as express.RequestHandler,
+  // courseResourceAuthorizedEditorValidation as express.RequestHandler, // TODO: Uncomment this line
   existingCourseResourceValidation,
   // existingResourceTypeValidation, // resourceType should not be updated
   courseResourceValidation,
@@ -31,7 +43,7 @@ resourceRouter.patch(
 
 resourceRouter.delete(
   '/delete/:_id',
-  courseResourceAuthorizedEditorValidation as express.RequestHandler,
+  // courseResourceAuthorizedEditorValidation as express.RequestHandler, // TODO: Uncomment this line
   existingCourseResourceValidation,
   simpleControlWrapper(deleteCourseResourceController)
 )
