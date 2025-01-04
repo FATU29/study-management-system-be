@@ -8,7 +8,7 @@ import {
   getPersonalFilesController,
   uploadFilesController
 } from '~/controllers/files.controllers'
-import { fileIdentityValidation } from '~/middlewares/files.middlewares'
+import { fileIdentityValidation, fileQueryValidation } from '~/middlewares/files.middlewares'
 import { accessTokenValidation } from '~/middlewares/users.middlewares'
 import { MAXIMUM_FILE_COUNT_ALLOWED, MAXIMUM_FILE_SIZE_ALLOWED } from '~/models/schemas/file.schema'
 import { simpleControlWrapper } from '~/utils/handler'
@@ -58,7 +58,14 @@ fileRouter.post(
   simpleControlWrapper(uploadFilesController)
 )
 
-fileRouter.get('/download', accessTokenValidation, fileIdentityValidation, simpleControlWrapper(downloadFileController))
+// mode: 'attachment' or 'inline'; default: 'attachment'
+fileRouter.get(
+  '/download',
+  accessTokenValidation,
+  // fileIdentityValidation,
+  fileQueryValidation,
+  simpleControlWrapper(downloadFileController)
+)
 
 fileRouter.get('/limits', (_req, res) => {
   res.send({
@@ -79,6 +86,6 @@ fileRouter.get(
 // })
 
 // only uploader can delete files
-fileRouter.delete('/delete', accessTokenValidation, fileIdentityValidation, simpleControlWrapper(deleteFileController))
+fileRouter.delete('/delete', accessTokenValidation, fileQueryValidation, simpleControlWrapper(deleteFileController))
 
 export default fileRouter

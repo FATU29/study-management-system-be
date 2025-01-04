@@ -34,56 +34,88 @@ class CoursesServices {
   }
 
   async getCourseForStudentService(enrollmentId: string) {
-    const courses = await databaseService.courses.aggregate([
-      {
-        $match: {
-          enrollmentIds: enrollmentId
-        }
-      },
-      {
-        $addFields: {
-          teacherObjectIds: {
-            $map: {
-              input: '$teacherIds',
-              as: 'id',
-              in: { $toObjectId: '$$id' }  // Convert string IDs to ObjectId
+    const courses = await databaseService.courses
+      .aggregate([
+        {
+          $match: {
+            enrollmentIds: enrollmentId
+          }
+        },
+        {
+          $addFields: {
+            teacherObjectIds: {
+              $map: {
+                input: '$teacherIds',
+                as: 'id',
+                in: { $toObjectId: '$$id' } // Convert string IDs to ObjectId
+              }
+            },
+            studentObjectIds: {
+              $map: {
+                input: '$enrollmentIds',
+                as: 'id',
+                in: { $toObjectId: '$$id' } // Convert string IDs to ObjectId
+              }
             }
           }
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'teacherObjectIds',
-          foreignField: '_id',
-          as: 'teacherDetails'
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          teacherIds: 1,
-          teacherDetails: {
-            $map: {
-              input: '$teacherDetails',
-              as: 'teacher',
-              in: {
-                _id: '$$teacher._id',
-                firstName: '$$teacher.firstName',
-                lastName: '$$teacher.lastName',
-                email: '$$teacher.email',
-                role: '$$teacher.role'
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'teacherObjectIds',
+            foreignField: '_id',
+            as: 'teacherDetails'
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'studentObjectIds',
+            foreignField: '_id',
+            as: 'studentDetails'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            teacherIds: 1,
+            rating: 1,
+            slug: 1,
+            teacherDetails: {
+              $map: {
+                input: '$teacherDetails',
+                as: 'teacher',
+                in: {
+                  _id: '$$teacher._id',
+                  firstName: '$$teacher.firstName',
+                  lastName: '$$teacher.lastName',
+                  email: '$$teacher.email',
+                  role: '$$teacher.role'
+                }
+              }
+            },
+            studentDetails: {
+              $map: {
+                input: '$studentDetails',
+                as: 'student',
+                in: {
+                  _id: '$$student._id',
+                  firstName: '$$student.firstName',
+                  lastName: '$$student.lastName',
+                  email: '$$student.email',
+                  role: '$$student.role'
+                }
               }
             }
           }
         }
-      }
-    ]).toArray();
-  
-    return courses;
+      ])
+      .toArray()
+
+    return courses
   }
-    
+
   async getCourseForAdminService() {
     const data = await databaseService.courses
       .aggregate([
@@ -175,7 +207,7 @@ class CoursesServices {
       }
     )
   }
-  
+
   async deleteEnrollmentInCourse(courseId: ObjectId, enrollmentId: string) {
     return await databaseService.courses.updateOne(
       {
@@ -202,8 +234,7 @@ class CoursesServices {
     )
   }
 
-
-  async addTeacherInCourse(courseId: ObjectId, teacherId: string){
+  async addTeacherInCourse(courseId: ObjectId, teacherId: string) {
     return await databaseService.courses.updateOne(
       {
         _id: courseId
@@ -216,7 +247,7 @@ class CoursesServices {
     )
   }
 
-  async delteSomeTeacherInCourse(courseId: ObjectId, teacherIds: string[]){
+  async delteSomeTeacherInCourse(courseId: ObjectId, teacherIds: string[]) {
     return await databaseService.courses.updateOne(
       {
         _id: courseId
@@ -229,7 +260,7 @@ class CoursesServices {
     )
   }
 
-  async deleteSomeEnrollmentsInCourse(courseId: ObjectId, enrollmentIds: string[]){
+  async deleteSomeEnrollmentsInCourse(courseId: ObjectId, enrollmentIds: string[]) {
     return await databaseService.courses.updateOne(
       {
         _id: courseId
@@ -242,7 +273,7 @@ class CoursesServices {
     )
   }
 
-  async addSomeEnrollmentsInCourse(courseId: ObjectId, enrollmentIds: string[]){
+  async addSomeEnrollmentsInCourse(courseId: ObjectId, enrollmentIds: string[]) {
     return await databaseService.courses.updateOne(
       {
         _id: courseId
@@ -257,7 +288,7 @@ class CoursesServices {
     )
   }
 
-  async addSomeTeachersInCourse(courseId: ObjectId, teacherIds: string[]){
+  async addSomeTeachersInCourse(courseId: ObjectId, teacherIds: string[]) {
     return await databaseService.courses.updateOne(
       {
         _id: courseId
@@ -272,7 +303,7 @@ class CoursesServices {
     )
   }
 
-  async paginatioCourseService(page:number ,perPage:number){
+  async paginatioCourseService(page: number, perPage: number) {
     const data = await databaseService.courses
       .aggregate([
         {
@@ -281,14 +312,14 @@ class CoursesServices {
               $map: {
                 input: '$teacherIds',
                 as: 'id',
-                in: { $toObjectId: '$$id' } 
+                in: { $toObjectId: '$$id' }
               }
             },
             enrollmentIds: {
               $map: {
                 input: '$enrollmentIds',
                 as: 'id',
-                in: { $toObjectId: '$$id' } 
+                in: { $toObjectId: '$$id' }
               }
             }
           }
@@ -350,11 +381,9 @@ class CoursesServices {
       .limit(perPage)
       .toArray()
 
-      return data
-
+    return data
   }
 }
-
 
 const courseServices = new CoursesServices()
 export default courseServices

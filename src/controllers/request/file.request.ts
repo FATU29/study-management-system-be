@@ -19,7 +19,17 @@ export interface DownloadFileRequestBody {
   sourceId?: string
 }
 
-export interface DeleteFileRequestBody {
+export interface DownloadFileRequestQuery {
+  fileId: string
+  sourceId?: string
+  inline?: boolean
+}
+
+// export interface DeleteFileRequestBody {
+//   fileId: string
+// }
+
+export interface DeleteFileRequestQuery {
   fileId: string
 }
 

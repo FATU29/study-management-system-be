@@ -1,15 +1,20 @@
 import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
 import { ICourseResource } from '~/models/schemas/course.resource.schema'
+import fileService from './file.services'
 
 class CourseResourcesService {
   async getCourseResources(courseId: ObjectId) {
-    const course = databaseService.courseResources.find({ courseId: courseId })
+    const course = databaseService.courseResources.find({ courseId: courseId }).sort({ createdAt: 1 })
     if (!course) {
       throw new Error(`Course with id "${courseId}" not exist`)
     }
     const courseResources = await course.toArray()
     return courseResources
+  }
+
+  async getSubmissions(resourceId: string, uploaderId: string) {
+    return await fileService.getFilesInfo(uploaderId, resourceId)
   }
 
   async addCourceResources(resource: ICourseResource) {
