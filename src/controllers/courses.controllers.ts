@@ -72,7 +72,7 @@ export const updateCourseController = async (req: Request<ParamsDictionary, any,
 
 export const deleteCourseController = async (req: Request<ParamsDictionary, any>, res: Response) => {
   const _id = new ObjectId(req.body.courseId)
-  
+
   const result = await courseServices.deleteCourse(_id)
 
   res.json({
@@ -89,6 +89,17 @@ export const getCourseForStudentController = async (req: Request, res: Response)
 
   res.json({
     message: 'Get Course for student',
+    status: HTTP_STATUS.OK,
+    courses
+  })
+}
+
+export const getCourseForTeacherController = async (req: Request, res: Response) => {
+  const { teacherId } = req.params
+  const courses = await courseServices.getCourseForTeacherService(teacherId as string)
+
+  res.json({
+    message: 'Get courses for teacher',
     status: HTTP_STATUS.OK,
     courses
   })
@@ -209,14 +220,11 @@ export const addSomeTeachersInCoureseController = async (req: Request, res: Resp
 }
 
 export const paginationCourseController = async (req: Request, res: Response) => {
- 
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.perPage as string) || 10; 
+  const page = parseInt(req.query.page as string) || 1
+  const limit = parseInt(req.query.perPage as string) || 10
 
-
-  const data = await courseServices.paginatioCourseService(page,limit)
+  const data = await courseServices.paginatioCourseService(page, limit)
   const length = await databaseService.courses.countDocuments()
-
 
   res.json({
     message: 'pagination course',
