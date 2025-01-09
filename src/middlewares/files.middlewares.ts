@@ -10,22 +10,22 @@ export const fileIdentityValidation = validate(
         notEmpty: true,
         isString: true
       },
-      // fileId: {
-      //   isString: true,
-      //   trim: true,
-      //   notEmpty: true
+      fileId: {
+        isString: true,
+        trim: true,
+        notEmpty: true
 
-      //   // custom: {
-      //   //   options: (value: string) => {
-      //   //     if (!ObjectId.isValid(value)) {
-      //   //       throw new ErrorWithStatus({
-      //   //         status: HTTP_STATUS.BAD_REQUEST,
-      //   //         message: 'Invalid file ID'
-      //   //       })
-      //   //     }
-      //   //   }
-      //   // }
-      // },
+        // custom: {
+        //   options: (value: string) => {
+        //     if (!ObjectId.isValid(value)) {
+        //       throw new ErrorWithStatus({
+        //         status: HTTP_STATUS.BAD_REQUEST,
+        //         message: 'Invalid file ID'
+        //       })
+        //     }
+        //   }
+        // }
+      },
       mode: {
         in: ['params'],
         optional: true,

@@ -116,6 +116,90 @@ class CoursesServices {
     return courses
   }
 
+  // Kind of ugly, but well ...
+  async getCourseForTeacherService(teacherId: string) {
+    const courses = await databaseService.courses
+      .aggregate([
+        {
+          $match: {
+            teacherIds: teacherId
+          }
+        },
+        {
+          $addFields: {
+            teacherObjectIds: {
+              $map: {
+                input: '$teacherIds',
+                as: 'id',
+                in: { $toObjectId: '$$id' } // Convert string IDs to ObjectId
+              }
+            },
+            studentObjectIds: {
+              $map: {
+                input: '$enrollmentIds',
+                as: 'id',
+                in: { $toObjectId: '$$id' } // Convert string IDs to ObjectId
+              }
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'teacherObjectIds',
+            foreignField: '_id',
+            as: 'teacherDetails'
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'studentObjectIds',
+            foreignField: '_id',
+            as: 'studentDetails'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            teacherIds: 1,
+            rating: 1,
+            slug: 1,
+            teacherDetails: {
+              $map: {
+                input: '$teacherDetails',
+                as: 'teacher',
+                in: {
+                  _id: '$$teacher._id',
+                  firstName: '$$teacher.firstName',
+                  lastName: '$$teacher.lastName',
+                  email: '$$teacher.email',
+                  role: '$$teacher.role'
+                }
+              }
+            },
+            studentDetails: {
+              $map: {
+                input: '$studentDetails',
+                as: 'student',
+                in: {
+                  _id: '$$student._id',
+                  firstName: '$$student.firstName',
+                  lastName: '$$student.lastName',
+                  email: '$$student.email',
+                  role: '$$student.role'
+                }
+              }
+            }
+          }
+        }
+      ])
+      .toArray()
+
+    return courses
+  }
+
   async getCourseForAdminService() {
     const data = await databaseService.courses
       .aggregate([

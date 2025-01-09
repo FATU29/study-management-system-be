@@ -110,7 +110,7 @@ class FileService {
     }
 
     if (file?.metadata?.uploaderId.toString() !== requesterId) {
-      if (!sourceId || file?.metadata?.sourceId.toString() !== sourceId) {
+      if (!sourceId || !file?.metadata?.sourceId || file?.metadata?.sourceId.toString() !== sourceId) {
         throw new ErrorWithStatus({
           status: HTTP_STATUS.FORBIDDEN,
           message: 'You are not allowed to download this file'
@@ -121,7 +121,7 @@ class FileService {
     const fileInfo: IFile = {
       _id: file._id,
       filename: file.filename,
-      mimetype: file.metadata.mimetype,
+      mimetype: file?.metadata.mimetype,
       size: file.length,
       uploadDate: file.uploadDate
     }
