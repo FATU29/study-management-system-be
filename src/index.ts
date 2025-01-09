@@ -46,7 +46,7 @@ app.use(defaultErrorHandler)
 const server = createServer(app)
 const io = new Server(server, {
   cors: {
-    origin: 'https://study-management-system-tau.vercel.app/',
+    origin: 'https://study-management-system-tau.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
   }
 })
