@@ -241,7 +241,8 @@ class CoursesServices {
       },
       {
         $push: {
-          teacherIds: teacherId
+          teacherIds: teacherId,
+          enrollmentIds: teacherId
         }
       }
     )
@@ -254,7 +255,8 @@ class CoursesServices {
       },
       {
         $pullAll: {
-          teacherIds: teacherIds
+          teacherIds: teacherIds,
+          enrollmentIds: teacherIds
         }
       }
     )
